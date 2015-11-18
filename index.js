@@ -3,7 +3,7 @@
  * @copyright 2015 Titus Wormer
  * @license MIT
  * @module vfile:find-down
- * @version 0.0.0
+ * @version 1.0.0
  * @fileoverview Find one or more files by searching the
  *   file system downwards.
  */
