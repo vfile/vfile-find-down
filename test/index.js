@@ -35,6 +35,9 @@ var tests = base('test');
 /**
  * Utility to ensure no outbound files are included, and
  * to strip the CWD from paths.
+ *
+ * @param {Array.<File>} files - Files to check.
+ * @return {Array.<string>} - Checked files.
  */
 function check(files) {
     if (files === null) {
@@ -57,7 +60,11 @@ test('findDown.one', function (t) {
     t.plan(14);
 
     findDown.one('package.json', function (err, file) {
-        t.deepEqual(check(file), ['package.json'], '`directory` should default to CWD');
+        t.deepEqual(
+            check(file),
+            ['package.json'],
+            '`directory` should default to CWD'
+        );
     });
 
     findDown.one('foo.json', tests, function (err, file) {
@@ -149,7 +156,11 @@ test('findDown.all', function (t) {
     t.plan(12);
 
     findDown.all('package.json', function (err, files) {
-        t.deepEqual(check(files), ['package.json'], '`directory` should default to CWD');
+        t.deepEqual(
+            check(files),
+            ['package.json'],
+            '`directory` should default to CWD'
+        );
     });
 
     findDown.all('foo.json', tests, function (err, files) {
@@ -211,11 +222,19 @@ test('findDown.all', function (t) {
     });
 
     findDown.all('!', tests, function (err, files) {
-        t.deepEqual(check(files), [], 'should return an empty array when not found #1');
+        t.deepEqual(
+            check(files),
+            [],
+            'should return an empty array when not found #1'
+        );
     });
 
     findDown.all(['?', '!'], tests, function (err, files) {
-        t.deepEqual(check(files), [], 'should return an empty array when not found #2');
+        t.deepEqual(
+            check(files),
+            [],
+            'should return an empty array when not found #2'
+        );
     });
 
     findDown.all(function (file) {

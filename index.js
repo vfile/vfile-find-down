@@ -34,7 +34,7 @@ var has = Object.prototype.hasOwnProperty;
  * Constants.
  */
 
-var NODE_MODULES = 'node_modules'
+var NODE_MODULES = 'node_modules';
 var EMPTY = '';
 var DOT = '.';
 var INCLUDE = 1;
@@ -49,7 +49,7 @@ var BREAK = 8;
  * @return {boolean} - Whether `mask` matches `config`.
  */
 function mask(value, bitmask) {
-  return (value & bitmask) === bitmask;
+    return (value & bitmask) === bitmask;
 }
 
 /**
@@ -61,7 +61,7 @@ function mask(value, bitmask) {
  *
  * @param {string} filePath - File-name and file-extension
  *   joined by a `.`, or file-extension.
- * @return {Function}
+ * @return {Function} - File-path test.
  */
 function filePathFactory(filePath) {
     var isExtensionLike = filePath.charAt(0) === DOT;
@@ -95,7 +95,7 @@ function filePathFactory(filePath) {
         ) {
             return SKIP;
         }
-    }
+    };
 }
 
 /**
@@ -141,7 +141,7 @@ function augment(test) {
         }
 
         return false;
-    }
+    };
 }
 
 /**
@@ -244,7 +244,9 @@ function visitAll(state, paths, directory, one, done) {
     }
 
     paths.forEach(function (filePath) {
-        visit(state, join(directory || EMPTY, filePath), one, function (files) {
+        var visitPath = join(directory || EMPTY, filePath);
+
+        visit(state, visitPath, one, function (files) {
             result = result.concat(files);
             next();
         });
