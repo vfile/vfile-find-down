@@ -12,7 +12,7 @@
     "downwards",
     "above",
     "retext",
-    "mdast"
+    "remark"
   ],
   "repository": "wooorm/vfile-find-down",
   "dependencies": {
@@ -28,16 +28,16 @@
     "istanbul": "^0.4.0",
     "jscs": "^2.0.0",
     "jscs-jsdoc": "^1.0.0",
-    "mdast": "^2.0.0",
-    "mdast-comment-config": "^1.0.0",
-    "mdast-github": "^1.0.0",
-    "mdast-lint": "^1.0.0",
-    "mdast-slug": "^2.0.0",
-    "mdast-validate-links": "^1.1.1",
+    "remark": "^3.0.0",
+    "remark-comment-config": "^2.0.0",
+    "remark-github": "^2.0.0",
+    "remark-lint": "^2.0.0",
+    "remark-slug": "^3.0.0",
+    "remark-validate-links": "^2.0.0",
     "tape": "^4.2.0"
   },
   "scripts": {
-    "build-md": "mdast . --quiet  --frail",
+    "build-md": "remark . --quiet  --frail",
     "build": "npm run build-md",
     "lint-api": "eslint .",
     "lint-style": "jscs --reporter inline .",

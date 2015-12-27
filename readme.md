@@ -55,7 +55,7 @@ findDown.one('.md', console.log);
 
 ## API
 
-### findDown.one(test\[, paths\], [callback](#function-callbackerr-file))
+### findDown.one(test\[, paths], [callback](#function-callbackerr-file))
 
 Find a file or a directory downwards.
 
@@ -119,7 +119,7 @@ Invoked when a matching file or the top of the volume is reached.
 
 *   The `err` parameter is never populated.
 
-### findDown.all(test\[, paths\], [callback](#function-callbackerr-files))
+### findDown.all(test\[, paths], [callback](#function-callbackerr-files))
 
 Find files or directories downwards.
 
