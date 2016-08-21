@@ -3,213 +3,144 @@
  * @copyright 2015 Titus Wormer
  * @license MIT
  * @module vfile:find-down
- * @version 1.0.0
- * @fileoverview Find one or more files by searching the
- *   file system downwards.
+ * @fileoverview Find files by searching the file system downwards.
  */
 
 'use strict';
 
-/* eslint-env node */
+/* eslint-disable handle-callback-err, max-params */
 
-/*
- * Dependencies.
- */
-
+/* Dependencies. */
 var fs = require('fs');
 var path = require('path');
-var toVFile = require('to-vfile');
+var has = require('has');
+var vfile = require('to-vfile');
 
-/*
- * Methods.
- */
-
-var readdir = fs.readdir;
-var stat = fs.stat;
-var resolve = path.resolve;
-var join = path.join;
-var has = Object.prototype.hasOwnProperty;
-
-/*
- * Constants.
- */
-
+/* Constants. */
 var NODE_MODULES = 'node_modules';
-var EMPTY = '';
-var DOT = '.';
 var INCLUDE = 1;
 var SKIP = 4;
 var BREAK = 8;
 
+/* Expose. */
+exports.INCLUDE = INCLUDE;
+exports.SKIP = SKIP;
+exports.BREAK = BREAK;
+exports.all = all;
+exports.one = one;
+
+/* Methods. */
+var readdir = fs.readdir;
+var stat = fs.stat;
+var resolve = path.resolve;
+var join = path.join;
+
 /**
- * Check a mask.
+ * Find a file or a directory downwards.
  *
- * @param {number} value - Config.
- * @param {number} bitmask - Mask.
- * @return {boolean} - Whether `mask` matches `config`.
+ * @param {Function} test - Filter function.
+ * @param {Array|string?} [paths] - Directories to search.
+ * @param {Function} callback - Invoked with a result.
  */
-function mask(value, bitmask) {
-    return (value & bitmask) === bitmask;
+function one(test, paths, callback) {
+  return find(test, paths, callback, true);
 }
 
 /**
- * Wrap a string given as a test.
+ * Find files or directories upwards.
  *
- * A normal string checks for equality to both the filename
- * and extension. A string starting with a `.` checks for
- * that equality too, and also to just the extension.
- *
- * @param {string} filePath - File-name and file-extension
- *   joined by a `.`, or file-extension.
- * @return {Function} - File-path test.
+ * @param {Function} test - Filter function.
+ * @param {Array|string?} [paths] - Directories to search.
+ * @param {Function} callback - Invoked with results.
  */
-function filePathFactory(filePath) {
-    var isExtensionLike = filePath.charAt(0) === DOT;
-    var extension = isExtensionLike && filePath.slice(1);
-
-    /**
-     * Check whether the given `file` matches the bound
-     * value.
-     *
-     * @param {VFile} file - Virtual file.
-     * @return {boolean} - Whether or not there is a match.
-     */
-    return function (file) {
-        var filename = file.filename;
-        var parts = [filename];
-
-        if (file.extension) {
-            parts.push(file.extension);
-        }
-
-        if (
-            filePath === parts.join(DOT) ||
-            (isExtensionLike && extension === file.extension)
-        ) {
-            return true;
-        }
-
-        if (
-            filename.charAt(0) === DOT ||
-            filename === NODE_MODULES
-        ) {
-            return SKIP;
-        }
-    };
+function all(test, paths, callback) {
+  return find(test, paths, callback);
 }
 
 /**
- * Augment `test` from several supported values to a
- * function returning a boolean.
+ * Find applicable files.
  *
- * @param {string|Function|Array.<string|Function>} test
- *   - Augmented test.
- * @return {Function} - test
+ * @param {*} test - One or more tests.
+ * @param {string|Array} paths - Directories to search.
+ * @param {Function} callback
+ * @param {boolean?} one - Whether to search for one or
+ *   more files.
  */
-function augment(test) {
-    var index;
-    var length;
-    var tests;
+function find(test, paths, callback, one) {
+  var state = {
+    broken: false,
+    checked: [],
+    test: augment(test)
+  };
 
-    if (typeof test === 'string') {
-        return filePathFactory(test);
-    }
+  if (!callback) {
+    callback = paths;
+    paths = [process.cwd()];
+  } else if (typeof paths === 'string') {
+    paths = [paths];
+  }
 
-    if (typeof test === 'function') {
-        return test;
-    }
-
-    length = test.length;
-    index = -1;
-    tests = [];
-
-    while (++index < length) {
-        tests[index] = augment(test[index]);
-    }
-
-    return function (file) {
-        var result;
-
-        index = -1;
-
-        while (++index < length) {
-            result = tests[index](file);
-
-            if (result) {
-                return result;
-            }
-        }
-
-        return false;
-    };
+  return visitAll(state, paths, null, one, function (result) {
+    callback(null, one ? result[0] || null : result);
+  });
 }
 
 /**
  * Find files in `filePath`.
  *
- * @example
- *   new FindDown({
- *     'extensions': ['md']
- *   }).visit('~/foo/bar', console.log);
- *
  * @param {Object} state - Information.
  * @param {string} filePath - Path to file or directory.
- * @param {boolean?} one - Whether to search for one or
- *   more files.
+ * @param {boolean?} one - Search for one file.
  * @param {Function} done - Invoked with a list of zero or
  *   more files.
  */
 function visit(state, filePath, one, done) {
-    var file;
+  var file;
 
-    /*
-     * Prevent walking into places multiple times.
-     */
+  /* Don’t walk into places multiple times. */
+  if (has(state.checked, filePath)) {
+    done([]);
+    return;
+  }
 
-    if (has.call(state.checked, filePath)) {
-        done([]);
-        return;
-    }
+  state.checked[filePath] = true;
 
-    state.checked[filePath] = true;
+  file = vfile(filePath);
 
-    file = toVFile(filePath);
-    file.quiet = true;
+  stat(resolve(filePath), function (err, stats) {
+    var real = Boolean(stats);
+    var results = [];
+    var result;
 
-    stat(resolve(filePath), function (err, stats) {
-        var real = Boolean(stats);
-        var results = [];
-        var result;
+    if (state.broken || !real) {
+      done([]);
+    } else {
+      result = state.test(file, stats);
 
-        if (state.broken || !real) {
-            done([]);
-        } else {
-            result = state.test(file);
+      if (mask(result, INCLUDE)) {
+        results.push(file);
 
-            if (mask(result, INCLUDE)) {
-                results.push(file);
-
-                if (one) {
-                    state.broken = true;
-                    return done(results);
-                }
-            }
-
-            if (mask(result, BREAK)) {
-                state.broken = true;
-            }
-
-            if (state.broken || !stats.isDirectory() || mask(result, SKIP)) {
-                return done(results);
-            }
-
-            readdir(filePath, function (err, entries) {
-                visitAll(state, entries, filePath, one, function (files) {
-                    done(results.concat(files));
-                });
-            });
+        if (one) {
+          state.broken = true;
+          return done(results);
         }
-    });
+      }
+
+      if (mask(result, BREAK)) {
+        state.broken = true;
+      }
+
+      if (state.broken || !stats.isDirectory() || mask(result, SKIP)) {
+        return done(results);
+      }
+
+      readdir(filePath, function (err, entries) {
+        visitAll(state, entries, filePath, one, function (files) {
+          done(results.concat(files));
+        });
+      });
+    }
+  });
 }
 
 /**
@@ -222,113 +153,113 @@ function visit(state, filePath, one, done) {
  * @param {Object} state - Information.
  * @param {Array.<string>} paths - Path to files and
  *   directories.
- * @param {string?} directory - Path to parent directory,
- *   if any.
+ * @param {string?} cwd - Path to parent, if any.
  * @param {boolean?} one - Whether to search for one or
  *   more files.
  * @param {Function} done - Invoked with a list of zero or
  *   more applicable files.
  */
-function visitAll(state, paths, directory, one, done) {
-    var result = [];
-    var length = paths.length;
-    var count = -1;
+function visitAll(state, paths, cwd, one, done) {
+  var length = paths.length;
+  var count = -1;
+  var result = [];
 
-    /** Invoke `done` when complete */
-    function next() {
-        count++;
+  paths.forEach(function (filePath) {
+    visit(state, join(cwd || '', filePath), one, function (files) {
+      result = result.concat(files);
+      next();
+    });
+  });
 
-        if (count === length) {
-            done(result);
-        }
+  next();
+
+  /** Invoke `done` when complete */
+  function next() {
+    count++;
+
+    if (count === length) {
+      done(result);
+    }
+  }
+}
+
+/**
+ * Augment `test` from several supported values to a
+ * function returning a boolean.
+ *
+ * @param {string|Function|Array.<string|Function>} test
+ *   - Augmented test.
+ * @return {Function} - test
+ */
+function augment(test) {
+  if (typeof test === 'function') {
+    return test;
+  }
+
+  return typeof test === 'string' ? testString(test) : multiple(test);
+}
+
+/**
+ * Wrap a string given as a test.
+ *
+ * A normal string checks for equality to both the filename
+ * and extension. A string starting with a `.` checks for
+ * that equality too, and also to just the extension.
+ *
+ * @param {string} test - Basename or extname.
+ * @return {Function} - File-path test.
+ */
+function testString(test) {
+  return check;
+
+  /**
+   * Check whether the given `file` matches the bound
+   * value.
+   *
+   * @param {VFile} file - Virtual file.
+   * @return {boolean} - Whether or not there is a match.
+   */
+  function check(file) {
+    var basename = file.basename;
+
+    if (test === basename || test === file.extname) {
+      return true;
     }
 
-    paths.forEach(function (filePath) {
-        var visitPath = join(directory || EMPTY, filePath);
-
-        visit(state, visitPath, one, function (files) {
-            result = result.concat(files);
-            next();
-        });
-    });
-
-    next();
+    if (basename.charAt(0) === '.' || basename === NODE_MODULES) {
+      return SKIP;
+    }
+  }
 }
 
-/**
- * Find applicable files.
- *
- * @example
- *   find('.md', '~', console.log);
- *
- * @param {*} test - One or more tests.
- * @param {string|Array.<string>} paths - Directories
- *   to search.
- * @param {Function} callback - Invoked with one or more
- *   files.
- * @param {boolean?} one - Whether to search for one or
- *   more files.
- */
-function find(test, paths, callback, one) {
-    var state = {
-        'broken': false,
-        'checked': [],
-        'test': augment(test)
-    };
+function multiple(test) {
+  var length = test.length;
+  var index = -1;
+  var tests = [];
 
-    if (!callback) {
-        callback = paths;
-        paths = [process.cwd()];
-    } else if (typeof paths === 'string') {
-        paths = [paths];
+  while (++index < length) {
+    tests[index] = augment(test[index]);
+  }
+
+  return check;
+
+  function check(file) {
+    var result;
+
+    index = -1;
+
+    while (++index < length) {
+      result = tests[index](file);
+
+      if (result) {
+        return result;
+      }
     }
 
-    return visitAll(state, paths, null, one, function (result) {
-        callback(null, one ? result[0] || null : result);
-    });
+    return false;
+  }
 }
 
-/**
- * Find a file or a directory downwards.
- *
- * @example
- *   one('package.json', console.log);
- *
- * @param {Function} test - Filter function.
- * @param {(Array.<string>|string)?} [paths]
- *   - Directories to search.
- * @param {Function} callback - Invoked with a result.
- */
-function one(test, paths, callback) {
-    return find(test, paths, callback, true);
+function mask(value, bitmask) {
+  return (value & bitmask) === bitmask;
 }
-
-/**
- * Find files or directories upwards.
- *
- * @example
- *   all('package.json', console.log);
- *
- * @param {Function} test - Filter function.
- * @param {(Array.<string>|string)?} [paths]
- *   - Directories to search.
- * @param {Function} callback - Invoked with results.
- */
-function all(test, paths, callback) {
-    return find(test, paths, callback);
-}
-
-/*
- * Expose.
- */
-
-var findDown = {};
-
-findDown.INCLUDE = INCLUDE;
-findDown.SKIP = SKIP;
-findDown.BREAK = BREAK;
-
-findDown.all = all;
-findDown.one = one;
-
-module.exports = findDown;
