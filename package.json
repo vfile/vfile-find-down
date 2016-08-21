@@ -11,6 +11,7 @@
     "downward"
   ],
   "dependencies": {
+    "has": "^1.0.1",
     "to-vfile": "^2.0.0"
   },
   "files": [
@@ -23,7 +24,6 @@
     "Titus Wormer <tituswormer@gmail.com> (http://wooorm.com)"
   ],
   "devDependencies": {
-    "has": "^1.0.1",
     "nyc": "^8.1.0",
     "remark-cli": "^1.0.0",
     "remark-comment-config": "^4.0.0",
