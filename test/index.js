@@ -1,25 +1,14 @@
-/**
- * @author Titus Wormer
- * @copyright 2015 Titus Wormer
- * @license MIT
- * @module vfile:find-down
- * @fileoverview Test suite for `vfile-find-down`.
- */
-
 'use strict';
 
 /* eslint-disable handle-callback-err */
 
-/* Dependencies. */
 var test = require('tape');
 var path = require('path');
 var findDown = require('..');
 
-/* Methods. */
 var join = path.join;
 var base = join.bind(null, process.cwd());
 
-/* Constants. */
 var tests = base('test');
 
 test('findDown.one', function (t) {

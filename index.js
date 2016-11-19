@@ -1,11 +1,3 @@
-/**
- * @author Titus Wormer
- * @copyright 2015 Titus Wormer
- * @license MIT
- * @module vfile:find-down
- * @fileoverview Find files by searching the file system downwards.
- */
-
 'use strict';
 
 /* eslint-disable handle-callback-err, max-params */
