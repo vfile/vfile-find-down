@@ -12,16 +12,9 @@ npm install vfile-find-down
 
 ## Usage
 
-Dependencies:
-
 ```js
 var findDown = require('vfile-find-down');
-```
 
-Search for files with a `.md` extension from the current working
-directory downwards:
-
-```js
 findDown.all('.md', console.log);
 ```
 
@@ -33,22 +26,6 @@ null [ VFile {
     messages: [],
     history: [ '/Users/tilde/projects/oss/vfile-find-down/readme.md' ],
     cwd: '/Users/tilde/projects/oss/vfile-find-down' } ]
-```
-
-Search for the first file:
-
-```js
-findDown.one('.md', console.log);
-```
-
-Logs:
-
-```js
-null VFile {
-  data: {},
-  messages: [],
-  history: [ '/Users/tilde/projects/oss/vfile-find-down/readme.md' ],
-  cwd: '/Users/tilde/projects/oss/vfile-find-down' }
 ```
 
 ## API
