@@ -76,13 +76,13 @@ The different flags can be combined by using the pipe operator:
 
 <!-- Definitions -->
 
-[travis-badge]: https://img.shields.io/travis/wooorm/vfile-find-down.svg
+[travis-badge]: https://img.shields.io/travis/vfile/vfile-find-down.svg
 
-[travis]: https://travis-ci.org/wooorm/vfile-find-down
+[travis]: https://travis-ci.org/vfile/vfile-find-down
 
-[codecov-badge]: https://img.shields.io/codecov/c/github/wooorm/vfile-find-down.svg
+[codecov-badge]: https://img.shields.io/codecov/c/github/vfile/vfile-find-down.svg
 
-[codecov]: https://codecov.io/github/wooorm/vfile-find-down
+[codecov]: https://codecov.io/github/vfile/vfile-find-down
 
 [npm-install]: https://docs.npmjs.com/cli/install
 
@@ -90,7 +90,7 @@ The different flags can be combined by using the pipe operator:
 
 [author]: http://wooorm.com
 
-[vfile]: https://github.com/wooorm/vfile
+[vfile]: https://github.com/vfile/vfile
 
 [stats]: https://nodejs.org/api/fs.html#fs_class_fs_stats
 
