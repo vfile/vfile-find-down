@@ -4,7 +4,6 @@
 
 var fs = require('fs');
 var path = require('path');
-var has = require('has');
 var vfile = require('to-vfile');
 
 var INCLUDE = 1;
@@ -17,6 +16,7 @@ exports.BREAK = BREAK;
 exports.all = all;
 exports.one = one;
 
+var own = {}.hasOwnProperty;
 var readdir = fs.readdir;
 var stat = fs.stat;
 var resolve = path.resolve;
@@ -59,7 +59,7 @@ function visit(state, filePath, one, done) {
   var file;
 
   /* Don’t walk into places multiple times. */
-  if (has(state.checked, filePath)) {
+  if (own.call(state.checked, filePath)) {
     done([]);
     return;
   }
