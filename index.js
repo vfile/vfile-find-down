@@ -2,62 +2,37 @@
 
 /* eslint-disable handle-callback-err, max-params */
 
-/* Dependencies. */
 var fs = require('fs');
 var path = require('path');
 var has = require('has');
 var vfile = require('to-vfile');
 
-/* Constants. */
-var NODE_MODULES = 'node_modules';
 var INCLUDE = 1;
 var SKIP = 4;
 var BREAK = 8;
 
-/* Expose. */
 exports.INCLUDE = INCLUDE;
 exports.SKIP = SKIP;
 exports.BREAK = BREAK;
 exports.all = all;
 exports.one = one;
 
-/* Methods. */
 var readdir = fs.readdir;
 var stat = fs.stat;
 var resolve = path.resolve;
 var join = path.join;
 
-/**
- * Find a file or a directory downwards.
- *
- * @param {Function} test - Filter function.
- * @param {Array|string?} [paths] - Directories to search.
- * @param {Function} callback - Invoked with a result.
- */
+/* Find a file or a directory downwards. */
 function one(test, paths, callback) {
   return find(test, paths, callback, true);
 }
 
-/**
- * Find files or directories upwards.
- *
- * @param {Function} test - Filter function.
- * @param {Array|string?} [paths] - Directories to search.
- * @param {Function} callback - Invoked with results.
- */
+/* Find files or directories downwards. */
 function all(test, paths, callback) {
   return find(test, paths, callback);
 }
 
-/**
- * Find applicable files.
- *
- * @param {*} test - One or more tests.
- * @param {string|Array} paths - Directories to search.
- * @param {Function} callback
- * @param {boolean?} one - Whether to search for one or
- *   more files.
- */
+/* Find applicable files. */
 function find(test, paths, callback, one) {
   var state = {
     broken: false,
@@ -72,20 +47,14 @@ function find(test, paths, callback, one) {
     paths = [paths];
   }
 
-  return visitAll(state, paths, null, one, function (result) {
+  return visitAll(state, paths, null, one, done);
+
+  function done(result) {
     callback(null, one ? result[0] || null : result);
-  });
+  }
 }
 
-/**
- * Find files in `filePath`.
- *
- * @param {Object} state - Information.
- * @param {string} filePath - Path to file or directory.
- * @param {boolean?} one - Search for one file.
- * @param {Function} done - Invoked with a list of zero or
- *   more files.
- */
+/* Find files in `filePath`. */
 function visit(state, filePath, one, done) {
   var file;
 
@@ -99,7 +68,9 @@ function visit(state, filePath, one, done) {
 
   file = vfile(filePath);
 
-  stat(resolve(filePath), function (err, stats) {
+  stat(resolve(filePath), onstat);
+
+  function onstat(err, stats) {
     var real = Boolean(stats);
     var results = [];
     var result;
@@ -126,63 +97,50 @@ function visit(state, filePath, one, done) {
         return done(results);
       }
 
-      readdir(filePath, function (err, entries) {
-        visitAll(state, entries, filePath, one, function (files) {
-          done(results.concat(files));
-        });
-      });
+      readdir(filePath, onread);
     }
-  });
+
+    function onread(err, entries) {
+      visitAll(state, entries, filePath, one, onvisit);
+    }
+
+    function onvisit(files) {
+      done(results.concat(files));
+    }
+  }
 }
 
-/**
- * Find files in `paths`.  Returns a list of
- * applicable files.
- *
- * @example
- *   visitAll('.md', ['bar'], '~/foo', false, console.log);
- *
- * @param {Object} state - Information.
- * @param {Array.<string>} paths - Path to files and
- *   directories.
- * @param {string?} cwd - Path to parent, if any.
- * @param {boolean?} one - Whether to search for one or
- *   more files.
- * @param {Function} done - Invoked with a list of zero or
- *   more applicable files.
- */
+/* Find files in `paths`.  Returns a list of
+ * applicable files. */
 function visitAll(state, paths, cwd, one, done) {
-  var length = paths.length;
-  var count = -1;
+  var expected = paths.length;
+  var actual = -1;
   var result = [];
 
-  paths.forEach(function (filePath) {
-    visit(state, join(cwd || '', filePath), one, function (files) {
-      result = result.concat(files);
-      next();
-    });
-  });
+  paths.forEach(each);
 
   next();
 
-  /** Invoke `done` when complete */
-  function next() {
-    count++;
+  function each(filePath) {
+    visit(state, join(cwd || '', filePath), one, onvisit);
+  }
 
-    if (count === length) {
+  function onvisit(files) {
+    result = result.concat(files);
+    next();
+  }
+
+  function next() {
+    actual++;
+
+    if (actual === expected) {
       done(result);
     }
   }
 }
 
-/**
- * Augment `test` from several supported values to a
- * function returning a boolean.
- *
- * @param {string|Function|Array.<string|Function>} test
- *   - Augmented test.
- * @return {Function} - test
- */
+/* Augment `test` from several supported values to a
+ * function returning a boolean. */
 function augment(test) {
   if (typeof test === 'function') {
     return test;
@@ -191,26 +149,15 @@ function augment(test) {
   return typeof test === 'string' ? testString(test) : multiple(test);
 }
 
-/**
- * Wrap a string given as a test.
- *
+/* Wrap a string given as a test.
  * A normal string checks for equality to both the filename
  * and extension. A string starting with a `.` checks for
- * that equality too, and also to just the extension.
- *
- * @param {string} test - Basename or extname.
- * @return {Function} - File-path test.
- */
+ * that equality too, and also to just the extension. */
 function testString(test) {
   return check;
 
-  /**
-   * Check whether the given `file` matches the bound
-   * value.
-   *
-   * @param {VFile} file - Virtual file.
-   * @return {boolean} - Whether or not there is a match.
-   */
+  /* Check whether the given `file` matches the bound
+   * value. */
   function check(file) {
     var basename = file.basename;
 
@@ -218,7 +165,7 @@ function testString(test) {
       return true;
     }
 
-    if (basename.charAt(0) === '.' || basename === NODE_MODULES) {
+    if (basename.charAt(0) === '.' || basename === 'node_modules') {
       return SKIP;
     }
   }
