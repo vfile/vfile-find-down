@@ -4,7 +4,7 @@ Find [vfile][]s by searching the file system downwards.
 
 ## Installation
 
-[npm][npm-install]:
+[npm][]:
 
 ```bash
 npm install vfile-find-down
@@ -18,41 +18,51 @@ var findDown = require('vfile-find-down');
 findDown.all('.md', console.log);
 ```
 
-Logs:
+Yields:
 
 ```js
 null [ VFile {
-    data: {},
-    messages: [],
-    history: [ '/Users/tilde/projects/oss/vfile-find-down/readme.md' ],
-    cwd: '/Users/tilde/projects/oss/vfile-find-down' } ]
+  data: {},
+  messages: [],
+  history: [ '/Users/tilde/projects/oss/vfile-find-down/readme.md' ],
+  cwd: '/Users/tilde/projects/oss/vfile-find-down' } ]
 ```
 
 ## API
 
-### `vfileFindDown.all(tests[, paths], callback)`
+### `findDown.all(tests[, paths], callback)`
 
 Search for `tests` downwards.  Invokes callback with either an error
 or an array of files passing `tests`.
 Note: Virtual Files are not read (their `contents` is not populated).
 
-###### Parameters
+##### Parameters
 
-*   `tests` (`string|Function|Array.<tests>`)
-    — A test is a [function invoked with a `vfile`][test].
-    If an array is passed in, any test must match a given file for it
-    to be included.
-    If a `string` is passed in, the `basename` or `extname` of files
-    must match it for them to be included (and hidden directories and
-    `node_modules` will not be searched).
-*   `paths` (`Array.<string>` or `string`, default: `process.cwd()`)
-    — Place(s) to searching from;
-*   `callback` (`function cb(err[, files])`);
-    — Function invoked with all matching files.
+###### `tests`
 
-### `vfileFindDown.one(tests[, paths], callback)`
+Things to search for (`string|Function|Array.<tests>`).
 
-Like `vfileFindDown.all`, but invokes `callback` with the first found
+If an array is passed in, any test must match a given file for it
+to be included.
+
+If a `string` is passed in, the `basename` or `extname` of files
+must match it for them to be included (and hidden directories and
+`node_modules` will not be searched).
+
+Otherwise, they must be [`function`][test].
+
+###### `paths`
+
+Place(s) to searching from (`Array.<string>` or `string`, default:
+`process.cwd()`).
+
+###### `callback`
+
+Function invoked with all matching files (`function cb(err[, files])`).
+
+### `findDown.one(tests[, paths], callback)`
+
+Like `findDown.all`, but invokes `callback` with the first found
 file, or `null`.
 
 ### `function test(file, stats)`
@@ -62,17 +72,17 @@ a [vfile][] and a [stats][] object.
 
 ###### Returns
 
-*   `true` or `vfileFindDown.INCLUDE` — Include the file in the results;
-*   `vfileFindDown.SKIP` — Do not search inside this directory;
-*   `vfileFindDown.BREAK` — Stop searching for files;
+*   `true` or `findDown.INCLUDE` — Include the file in the results;
+*   `findDown.SKIP` — Do not search inside this directory;
+*   `findDown.BREAK` — Stop searching for files;
 *   anything else is ignored: files are neither included nor skipped.
 
 The different flags can be combined by using the pipe operator:
-`vfileFindDown.INCLUDE | vfileFindDown.SKIP`.
+`findDown.INCLUDE | findDown.SKIP`.
 
 ## License
 
-[MIT][license] © [Titus Wormer][author]
+[MIT][] © [Titus Wormer][author]
 
 <!-- Definitions -->
 
@@ -84,9 +94,9 @@ The different flags can be combined by using the pipe operator:
 
 [codecov]: https://codecov.io/github/vfile/vfile-find-down
 
-[npm-install]: https://docs.npmjs.com/cli/install
+[npm]: https://docs.npmjs.com/cli/install
 
-[license]: LICENSE
+[mit]: LICENSE
 
 [author]: http://wooorm.com
 
