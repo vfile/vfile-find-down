@@ -5,6 +5,7 @@ node_js:
 after_script: bash <(curl -s https://codecov.io/bash)
 deploy:
   - provider: npm
+    skip_cleanup: true
     email: tituswormer@gmail.com
     api_key:
       secure: pIuT4DmtEa1PvVBJlF7d6Q0tHAYBKD8yix4e8vGSnp7vNoxBmQMMjgWDepe3wPRLkskU/Rm+K8x014XEHc1mUht3vBY8jhCZ0i3whewPEH5+F3pSM8Lq7RMgG78tzs6azkvMV+pUz2iheP0xR16FzAUSfbTJrBKHLDg/lgCX8HxM8LbDcfLraN6ooMDnSkELfxQ3btDBJGugzHfkk+T5g5s0qBEiBDR2/lch2N7hgD2Bvyx3sDTSltaIi3zKdUJ0E72uIkiRm+W1iPGygka6WIF4yTKk4g5gNps3xEbHrbB9rpDtkJjpZWyiuslEh9yxXqADsKfCVdOhe5yMaHm2N7ghrp2yL6EQ2yCaEJ/++pJDh1l//U/M7u6MQMQYOx81UmEYgtr35Odj8YINc9hWj0fQtNIlRVag6u6bLMY40aTm0j5E+gzJxUyShVjkU02jV/5FN+VsLGuQ947USponIpWenclgbCzI/OdNuOyorTfpiY5sV/fZ/142TRVeGzcXRkXENdIaQS+bRQ5Tk/QIqMBJecV4SdExL7umSdhy6fn5as3VJl0YsHs5ZtOiXmAj00px4zKs9lw3QQv8QXPB0bGXRZf3fFtwUdrQQoc95/0qIjjFRrozCoMDNbyZz2JCzwCyCqvOYT5s1zw6jftN9Es6rmansG6mR6WUDqYhVR4=
