@@ -10,7 +10,7 @@
     "down",
     "downward"
   ],
-  "repository": "https://github.com/vfile/vfile-find-down",
+  "repository": "vfile/vfile-find-down",
   "bugs": "https://github.com/vfile/vfile-find-down/issues",
   "author": "Titus Wormer <tituswormer@gmail.com> (http://wooorm.com)",
   "contributors": [
