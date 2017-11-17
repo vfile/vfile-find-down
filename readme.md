@@ -80,6 +80,13 @@ a [vfile][] and a [stats][] object.
 The different flags can be combined by using the pipe operator:
 `findDown.INCLUDE | findDown.SKIP`.
 
+## Contribute
+
+See [`contribute.md` in `vfile/vfile`][contribute] for ways to get started.
+
+This organisation has a [Code of Conduct][coc].  By interacting with this
+repository, organisation, or community you agree to abide by its terms.
+
 ## License
 
 [MIT][] © [Titus Wormer][author]
@@ -105,3 +112,7 @@ The different flags can be combined by using the pipe operator:
 [stats]: https://nodejs.org/api/fs.html#fs_class_fs_stats
 
 [test]: #function-testfile-stats
+
+[contribute]: https://github.com/vfile/vfile/blob/master/contributing.md
+
+[coc]: https://github.com/vfile/vfile/blob/master/code-of-conduct.md
