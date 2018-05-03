@@ -1,35 +1,35 @@
-'use strict';
+'use strict'
 
 /* eslint-disable handle-callback-err, max-params */
 
-var fs = require('fs');
-var path = require('path');
-var vfile = require('to-vfile');
+var fs = require('fs')
+var path = require('path')
+var vfile = require('to-vfile')
 
-var INCLUDE = 1;
-var SKIP = 4;
-var BREAK = 8;
+var INCLUDE = 1
+var SKIP = 4
+var BREAK = 8
 
-exports.INCLUDE = INCLUDE;
-exports.SKIP = SKIP;
-exports.BREAK = BREAK;
-exports.all = all;
-exports.one = one;
+exports.INCLUDE = INCLUDE
+exports.SKIP = SKIP
+exports.BREAK = BREAK
+exports.all = all
+exports.one = one
 
-var own = {}.hasOwnProperty;
-var readdir = fs.readdir;
-var stat = fs.stat;
-var resolve = path.resolve;
-var join = path.join;
+var own = {}.hasOwnProperty
+var readdir = fs.readdir
+var stat = fs.stat
+var resolve = path.resolve
+var join = path.join
 
 /* Find a file or a directory downwards. */
 function one(test, paths, callback) {
-  return find(test, paths, callback, true);
+  return find(test, paths, callback, true)
 }
 
 /* Find files or directories downwards. */
 function all(test, paths, callback) {
-  return find(test, paths, callback);
+  return find(test, paths, callback)
 }
 
 /* Find applicable files. */
@@ -38,74 +38,74 @@ function find(test, paths, callback, one) {
     broken: false,
     checked: [],
     test: augment(test)
-  };
-
-  if (!callback) {
-    callback = paths;
-    paths = [process.cwd()];
-  } else if (typeof paths === 'string') {
-    paths = [paths];
   }
 
-  return visitAll(state, paths, null, one, done);
+  if (!callback) {
+    callback = paths
+    paths = [process.cwd()]
+  } else if (typeof paths === 'string') {
+    paths = [paths]
+  }
+
+  return visitAll(state, paths, null, one, done)
 
   function done(result) {
-    callback(null, one ? result[0] || null : result);
+    callback(null, one ? result[0] || null : result)
   }
 }
 
 /* Find files in `filePath`. */
 function visit(state, filePath, one, done) {
-  var file;
+  var file
 
   /* Don’t walk into places multiple times. */
   if (own.call(state.checked, filePath)) {
-    done([]);
-    return;
+    done([])
+    return
   }
 
-  state.checked[filePath] = true;
+  state.checked[filePath] = true
 
-  file = vfile(filePath);
+  file = vfile(filePath)
 
-  stat(resolve(filePath), onstat);
+  stat(resolve(filePath), onstat)
 
   function onstat(err, stats) {
-    var real = Boolean(stats);
-    var results = [];
-    var result;
+    var real = Boolean(stats)
+    var results = []
+    var result
 
     if (state.broken || !real) {
-      done([]);
+      done([])
     } else {
-      result = state.test(file, stats);
+      result = state.test(file, stats)
 
       if (mask(result, INCLUDE)) {
-        results.push(file);
+        results.push(file)
 
         if (one) {
-          state.broken = true;
-          return done(results);
+          state.broken = true
+          return done(results)
         }
       }
 
       if (mask(result, BREAK)) {
-        state.broken = true;
+        state.broken = true
       }
 
       if (state.broken || !stats.isDirectory() || mask(result, SKIP)) {
-        return done(results);
+        return done(results)
       }
 
-      readdir(filePath, onread);
+      readdir(filePath, onread)
     }
 
     function onread(err, entries) {
-      visitAll(state, entries, filePath, one, onvisit);
+      visitAll(state, entries, filePath, one, onvisit)
     }
 
     function onvisit(files) {
-      done(results.concat(files));
+      done(results.concat(files))
     }
   }
 }
@@ -113,28 +113,28 @@ function visit(state, filePath, one, done) {
 /* Find files in `paths`.  Returns a list of
  * applicable files. */
 function visitAll(state, paths, cwd, one, done) {
-  var expected = paths.length;
-  var actual = -1;
-  var result = [];
+  var expected = paths.length
+  var actual = -1
+  var result = []
 
-  paths.forEach(each);
+  paths.forEach(each)
 
-  next();
+  next()
 
   function each(filePath) {
-    visit(state, join(cwd || '', filePath), one, onvisit);
+    visit(state, join(cwd || '', filePath), one, onvisit)
   }
 
   function onvisit(files) {
-    result = result.concat(files);
-    next();
+    result = result.concat(files)
+    next()
   }
 
   function next() {
-    actual++;
+    actual++
 
     if (actual === expected) {
-      done(result);
+      done(result)
     }
   }
 }
@@ -143,10 +143,10 @@ function visitAll(state, paths, cwd, one, done) {
  * function returning a boolean. */
 function augment(test) {
   if (typeof test === 'function') {
-    return test;
+    return test
   }
 
-  return typeof test === 'string' ? testString(test) : multiple(test);
+  return typeof test === 'string' ? testString(test) : multiple(test)
 }
 
 /* Wrap a string given as a test.
@@ -154,51 +154,51 @@ function augment(test) {
  * and extension. A string starting with a `.` checks for
  * that equality too, and also to just the extension. */
 function testString(test) {
-  return check;
+  return check
 
   /* Check whether the given `file` matches the bound
    * value. */
   function check(file) {
-    var basename = file.basename;
+    var basename = file.basename
 
     if (test === basename || test === file.extname) {
-      return true;
+      return true
     }
 
     if (basename.charAt(0) === '.' || basename === 'node_modules') {
-      return SKIP;
+      return SKIP
     }
   }
 }
 
 function multiple(test) {
-  var length = test.length;
-  var index = -1;
-  var tests = [];
+  var length = test.length
+  var index = -1
+  var tests = []
 
   while (++index < length) {
-    tests[index] = augment(test[index]);
+    tests[index] = augment(test[index])
   }
 
-  return check;
+  return check
 
   function check(file) {
-    var result;
+    var result
 
-    index = -1;
+    index = -1
 
     while (++index < length) {
-      result = tests[index](file);
+      result = tests[index](file)
 
       if (result) {
-        return result;
+        return result
       }
     }
 
-    return false;
+    return false
   }
 }
 
 function mask(value, bitmask) {
-  return (value & bitmask) === bitmask;
+  return (value & bitmask) === bitmask
 }

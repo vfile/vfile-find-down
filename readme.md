@@ -13,9 +13,9 @@ npm install vfile-find-down
 ## Usage
 
 ```js
-var findDown = require('vfile-find-down');
+var findDown = require('vfile-find-down')
 
-findDown.all('.md', console.log);
+findDown.all('.md', console.log)
 ```
 
 Yields:
