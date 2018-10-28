@@ -14,7 +14,7 @@ var tests = base('test')
 test('findDown.one', function(t) {
   t.plan(13)
 
-  findDown.one('package.json', function(err, file) {
+  findDown.one('package.json', function(error, file) {
     t.deepEqual(
       check(file),
       ['package.json'],
@@ -22,7 +22,7 @@ test('findDown.one', function(t) {
     )
   })
 
-  findDown.one('foo.json', tests, function(err, file) {
+  findDown.one('foo.json', tests, function(error, file) {
     t.deepEqual(
       check(file),
       [join('test', 'fixture', 'foo.json')],
@@ -30,7 +30,7 @@ test('findDown.one', function(t) {
     )
   })
 
-  findDown.one('.json', tests, function(err, file) {
+  findDown.one('.json', tests, function(error, file) {
     t.deepEqual(
       check(file),
       [join('test', 'fixture', 'foo.json')],
@@ -43,7 +43,7 @@ test('findDown.one', function(t) {
       return file.stem === 'quux'
     },
     tests,
-    function(err, file) {
+    function(error, file) {
       t.deepEqual(
         check(file),
         [join('test', 'fixture', 'foo', 'bar', 'quux.md')],
@@ -52,7 +52,7 @@ test('findDown.one', function(t) {
     }
   )
 
-  findDown.one('.test', tests, function(err, file) {
+  findDown.one('.test', tests, function(error, file) {
     t.deepEqual(
       check(file),
       [join('test', 'fixture', '.test')],
@@ -60,7 +60,7 @@ test('findDown.one', function(t) {
     )
   })
 
-  findDown.one('.md', function(err, file) {
+  findDown.one('.md', function(error, file) {
     t.deepEqual(
       check(file),
       ['readme.md'],
@@ -68,7 +68,7 @@ test('findDown.one', function(t) {
     )
   })
 
-  findDown.one(['.md', '.json'], tests, function(err, file) {
+  findDown.one(['.md', '.json'], tests, function(error, file) {
     t.deepEqual(
       check(file),
       [join('test', 'fixture', 'foo.json')],
@@ -79,7 +79,7 @@ test('findDown.one', function(t) {
   findDown.one(
     '.md',
     [base('test', 'fixture', 'foo'), base('test', 'fixture', 'bar')],
-    function(err, file) {
+    function(error, file) {
       t.deepEqual(
         check(file),
         [join('test', 'fixture', 'foo', 'quuux.md')],
@@ -88,11 +88,11 @@ test('findDown.one', function(t) {
     }
   )
 
-  findDown.one('!', tests, function(err, file) {
+  findDown.one('!', tests, function(error, file) {
     t.equal(file, null, 'should pass `null` when not found #1')
   })
 
-  findDown.one(['!', '?'], tests, function(err, file) {
+  findDown.one(['!', '?'], tests, function(error, file) {
     t.equal(file, null, 'should pass `null` when not found #2')
   })
 
@@ -103,7 +103,7 @@ test('findDown.one', function(t) {
       }
     },
     tests,
-    function(err, file) {
+    function(error, file) {
       t.deepEqual(
         check(file),
         [join('test', 'fixture', 'foo')],
@@ -119,12 +119,12 @@ test('findDown.one', function(t) {
       }
     },
     tests,
-    function(err, file) {
+    function(error, file) {
       t.deepEqual(check(file), [null], 'should support `findDown.BREAK`')
     }
   )
 
-  findDown.one('.md', 'missing', function(err, file) {
+  findDown.one('.md', 'missing', function(error, file) {
     t.deepEqual(check(file), [null], 'should ignore unfound files')
   })
 })
@@ -132,7 +132,7 @@ test('findDown.one', function(t) {
 test('findDown.all', function(t) {
   t.plan(12)
 
-  findDown.all('package.json', function(err, files) {
+  findDown.all('package.json', function(error, files) {
     t.deepEqual(
       check(files),
       ['package.json'],
@@ -140,7 +140,7 @@ test('findDown.all', function(t) {
     )
   })
 
-  findDown.all('foo.json', tests, function(err, files) {
+  findDown.all('foo.json', tests, function(error, files) {
     t.deepEqual(
       check(files),
       [join('test', 'fixture', 'foo.json')],
@@ -148,7 +148,7 @@ test('findDown.all', function(t) {
     )
   })
 
-  findDown.all('.md', tests, function(err, files) {
+  findDown.all('.md', tests, function(error, files) {
     t.deepEqual(
       check(files).sort(),
       [
@@ -169,7 +169,7 @@ test('findDown.all', function(t) {
       return file.stem.charAt(0) === 'q'
     },
     tests,
-    function(err, files) {
+    function(error, files) {
       t.deepEqual(
         check(files).sort(),
         [
@@ -183,7 +183,7 @@ test('findDown.all', function(t) {
     }
   )
 
-  findDown.all('.test', tests, function(err, files) {
+  findDown.all('.test', tests, function(error, files) {
     t.deepEqual(
       check(files),
       [join('test', 'fixture', '.test')],
@@ -191,7 +191,7 @@ test('findDown.all', function(t) {
     )
   })
 
-  findDown.all(['.json', '.md'], tests, function(err, files) {
+  findDown.all(['.json', '.md'], tests, function(error, files) {
     t.deepEqual(
       check(files).sort(),
       [
@@ -214,7 +214,7 @@ test('findDown.all', function(t) {
       base('test', 'fixture', 'foo', 'bar', 'baz'),
       base('test', 'fixture', 'bar', 'foo', 'bar')
     ],
-    function(err, file) {
+    function(error, file) {
       t.deepEqual(
         check(file).sort(),
         [
@@ -226,7 +226,7 @@ test('findDown.all', function(t) {
     }
   )
 
-  findDown.all('!', tests, function(err, files) {
+  findDown.all('!', tests, function(error, files) {
     t.deepEqual(
       check(files),
       [],
@@ -234,7 +234,7 @@ test('findDown.all', function(t) {
     )
   })
 
-  findDown.all(['?', '!'], tests, function(err, files) {
+  findDown.all(['?', '!'], tests, function(error, files) {
     t.deepEqual(
       check(files),
       [],
@@ -257,7 +257,7 @@ test('findDown.all', function(t) {
       return mask
     },
     tests,
-    function(err, files) {
+    function(error, files) {
       t.deepEqual(
         check(files),
         [
@@ -269,14 +269,14 @@ test('findDown.all', function(t) {
     }
   )
 
-  findDown.all('.md', 'missing', function(err, file) {
+  findDown.all('.md', 'missing', function(error, file) {
     t.deepEqual(check(file), [], 'should ignore unfound files')
   })
 
   findDown.all(
     '.md',
     [base('test', 'fixture', 'foo'), base('test', 'fixture')],
-    function(err, files) {
+    function(error, files) {
       t.deepEqual(
         check(files),
         [

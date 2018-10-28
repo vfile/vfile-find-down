@@ -70,7 +70,7 @@ function visit(state, filePath, one, done) {
 
   stat(resolve(filePath), onstat)
 
-  function onstat(err, stats) {
+  function onstat(error, stats) {
     var real = Boolean(stats)
     var results = []
     var result
@@ -100,7 +100,7 @@ function visit(state, filePath, one, done) {
       readdir(filePath, onread)
     }
 
-    function onread(err, entries) {
+    function onread(error, entries) {
       visitAll(state, entries, filePath, one, onvisit)
     }
 
