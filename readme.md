@@ -1,4 +1,9 @@
-# vfile-find-down [![Build Status][travis-badge]][travis] [![Coverage Status][codecov-badge]][codecov]
+# vfile-find-down
+
+[![Build][build-badge]][build]
+[![Coverage][coverage-badge]][coverage]
+[![Downloads][downloads-badge]][downloads]
+[![Chat][chat-badge]][chat]
 
 Find [vfile][]s by searching the file system downwards.
 
@@ -93,13 +98,21 @@ repository, organisation, or community you agree to abide by its terms.
 
 <!-- Definitions -->
 
-[travis-badge]: https://img.shields.io/travis/vfile/vfile-find-down.svg
+[build-badge]: https://img.shields.io/travis/vfile/vfile-find-down.svg
 
-[travis]: https://travis-ci.org/vfile/vfile-find-down
+[build]: https://travis-ci.org/vfile/vfile-find-down
 
-[codecov-badge]: https://img.shields.io/codecov/c/github/vfile/vfile-find-down.svg
+[coverage-badge]: https://img.shields.io/codecov/c/github/vfile/vfile-find-down.svg
 
-[codecov]: https://codecov.io/github/vfile/vfile-find-down
+[coverage]: https://codecov.io/github/vfile/vfile-v
+
+[downloads-badge]: https://img.shields.io/npm/dm/vfile-find-down.svg
+
+[downloads]: https://www.npmjs.com/package/vfile-find-down
+
+[chat-badge]: https://img.shields.io/badge/join%20the%20community-on%20spectrum-7b16ff.svg
+
+[chat]: https://spectrum.chat/unified/vfile
 
 [npm]: https://docs.npmjs.com/cli/install
 
