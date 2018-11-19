@@ -22,17 +22,17 @@ var stat = fs.stat
 var resolve = path.resolve
 var join = path.join
 
-/* Find a file or a directory downwards. */
+// Find a file or a directory downwards.
 function one(test, paths, callback) {
   return find(test, paths, callback, true)
 }
 
-/* Find files or directories downwards. */
+// Find files or directories downwards.
 function all(test, paths, callback) {
   return find(test, paths, callback)
 }
 
-/* Find applicable files. */
+// Find applicable files.
 function find(test, paths, callback, one) {
   var state = {
     broken: false,
@@ -54,11 +54,11 @@ function find(test, paths, callback, one) {
   }
 }
 
-/* Find files in `filePath`. */
+// Find files in `filePath`.
 function visit(state, filePath, one, done) {
   var file
 
-  /* Don’t walk into places multiple times. */
+  // Don’t walk into places multiple times.
   if (own.call(state.checked, filePath)) {
     done([])
     return
@@ -110,8 +110,7 @@ function visit(state, filePath, one, done) {
   }
 }
 
-/* Find files in `paths`.  Returns a list of
- * applicable files. */
+// Find files in `paths`.  Returns a list of applicable files.
 function visitAll(state, paths, cwd, one, done) {
   var expected = paths.length
   var actual = -1
@@ -139,8 +138,8 @@ function visitAll(state, paths, cwd, one, done) {
   }
 }
 
-/* Augment `test` from several supported values to a
- * function returning a boolean. */
+// Augment `test` from several supported values to a function returning a
+// boolean.
 function augment(test) {
   if (typeof test === 'function') {
     return test
@@ -149,15 +148,14 @@ function augment(test) {
   return typeof test === 'string' ? testString(test) : multiple(test)
 }
 
-/* Wrap a string given as a test.
- * A normal string checks for equality to both the filename
- * and extension. A string starting with a `.` checks for
- * that equality too, and also to just the extension. */
+// Wrap a string given as a test.
+// A normal string checks for equality to both the filename and extension.
+// A string starting with a `.` checks for that equality too, and also to just
+// the extension.
 function testString(test) {
   return check
 
-  /* Check whether the given `file` matches the bound
-   * value. */
+  // Check whether the given `file` matches the bound value.
   function check(file) {
     var basename = file.basename
 
