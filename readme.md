@@ -3,15 +3,17 @@
 [![Build][build-badge]][build]
 [![Coverage][coverage-badge]][coverage]
 [![Downloads][downloads-badge]][downloads]
+[![Sponsors][sponsors-badge]][collective]
+[![Backers][backers-badge]][collective]
 [![Chat][chat-badge]][chat]
 
 Find [vfile][]s by searching the file system downwards.
 
-## Installation
+## Install
 
 [npm][]:
 
-```bash
+```sh
 npm install vfile-find-down
 ```
 
@@ -37,8 +39,8 @@ null [ VFile {
 
 ### `findDown.all(tests[, paths], callback)`
 
-Search for `tests` downwards.  Invokes callback with either an error
-or an array of files passing `tests`.
+Search for `tests` downwards.
+Invokes callback with either an error or an array of files passing `tests`.
 Note: Virtual Files are not read (their `contents` is not populated).
 
 ##### Parameters
@@ -47,12 +49,12 @@ Note: Virtual Files are not read (their `contents` is not populated).
 
 Things to search for (`string|Function|Array.<tests>`).
 
-If an array is passed in, any test must match a given file for it
-to be included.
+If an array is passed in, any test must match a given file for it to be
+included.
 
-If a `string` is passed in, the `basename` or `extname` of files
-must match it for them to be included (and hidden directories and
-`node_modules` will not be searched).
+If a `string` is passed in, the `basename` or `extname` of files must match it
+for them to be included (and hidden directories and `node_modules` will not be
+searched).
 
 Otherwise, they must be [`function`][test].
 
@@ -67,34 +69,37 @@ Function invoked with all matching files (`function cb(err[, files])`).
 
 ### `findDown.one(tests[, paths], callback)`
 
-Like `findDown.all`, but invokes `callback` with the first found
-file, or `null`.
+Like `findDown.all`, but invokes `callback` with the first found file, or
+`null`.
 
 ### `function test(file, stats)`
 
-Check whether a virtual file should be included.  Invoked with
-a [vfile][] and a [stats][] object.
+Check whether a virtual file should be included.
+Invoked with a [vfile][] and a [stats][] object.
 
 ###### Returns
 
-*   `true` or `findDown.INCLUDE` — Include the file in the results;
-*   `findDown.SKIP` — Do not search inside this directory;
-*   `findDown.BREAK` — Stop searching for files;
-*   anything else is ignored: files are neither included nor skipped.
+*   `true` or `findDown.INCLUDE` — Include the file in the results
+*   `findDown.SKIP` — Do not search inside this directory
+*   `findDown.BREAK` — Stop searching for files
+*   anything else is ignored: files are neither included nor skipped
 
 The different flags can be combined by using the pipe operator:
 `findDown.INCLUDE | findDown.SKIP`.
 
 ## Contribute
 
-See [`contributing.md` in `vfile/vfile`][contributing] for ways to get started.
+See [`contributing.md`][contributing] in [`vfile/.github`][health] for ways to
+get started.
+See [`support.md`][support] for ways to get help.
 
-This organisation has a [Code of Conduct][coc].  By interacting with this
-repository, organisation, or community you agree to abide by its terms.
+This project has a [Code of Conduct][coc].
+By interacting with this repository, organisation, or community you agree to
+abide by its terms.
 
 ## License
 
-[MIT][] © [Titus Wormer][author]
+[MIT][license] © [Titus Wormer][author]
 
 <!-- Definitions -->
 
@@ -104,11 +109,17 @@ repository, organisation, or community you agree to abide by its terms.
 
 [coverage-badge]: https://img.shields.io/codecov/c/github/vfile/vfile-find-down.svg
 
-[coverage]: https://codecov.io/github/vfile/vfile-v
+[coverage]: https://codecov.io/github/vfile/vfile-find-down
 
 [downloads-badge]: https://img.shields.io/npm/dm/vfile-find-down.svg
 
 [downloads]: https://www.npmjs.com/package/vfile-find-down
+
+[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
+
+[backers-badge]: https://opencollective.com/unified/backers/badge.svg
+
+[collective]: https://opencollective.com/unified
 
 [chat-badge]: https://img.shields.io/badge/join%20the%20community-on%20spectrum-7b16ff.svg
 
@@ -116,7 +127,15 @@ repository, organisation, or community you agree to abide by its terms.
 
 [npm]: https://docs.npmjs.com/cli/install
 
-[mit]: license
+[contributing]: https://github.com/vfile/.github/blob/master/contributing.md
+
+[support]: https://github.com/vfile/.github/blob/master/support.md
+
+[health]: https://github.com/vfile/.github
+
+[coc]: https://github.com/vfile/.github/blob/master/code-of-conduct.md
+
+[license]: license
 
 [author]: https://wooorm.com
 
@@ -125,7 +144,3 @@ repository, organisation, or community you agree to abide by its terms.
 [stats]: https://nodejs.org/api/fs.html#fs_class_fs_stats
 
 [test]: #function-testfile-stats
-
-[contributing]: https://github.com/vfile/vfile/blob/master/contributing.md
-
-[coc]: https://github.com/vfile/vfile/blob/master/code-of-conduct.md
