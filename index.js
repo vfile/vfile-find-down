@@ -1,7 +1,5 @@
 'use strict'
 
-/* eslint-disable handle-callback-err, max-params */
-
 var fs = require('fs')
 var path = require('path')
 var vfile = require('to-vfile')
@@ -111,6 +109,7 @@ function visit(state, filePath, one, done) {
 }
 
 // Find files in `paths`.  Returns a list of applicable files.
+// eslint-disable-next-line max-params
 function visitAll(state, paths, cwd, one, done) {
   var expected = paths.length
   var actual = -1

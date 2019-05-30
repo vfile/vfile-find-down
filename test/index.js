@@ -1,7 +1,5 @@
 'use strict'
 
-/* eslint-disable handle-callback-err */
-
 var test = require('tape')
 var path = require('path')
 var findDown = require('..')
