@@ -4,21 +4,11 @@ var fs = require('fs')
 var path = require('path')
 var vfile = require('to-vfile')
 
-var INCLUDE = 1
-var SKIP = 4
-var BREAK = 8
-
-exports.INCLUDE = INCLUDE
-exports.SKIP = SKIP
-exports.BREAK = BREAK
+exports.INCLUDE = 1
+exports.SKIP = 4
+exports.BREAK = 8
 exports.all = all
 exports.one = one
-
-var own = {}.hasOwnProperty
-var readdir = fs.readdir
-var stat = fs.stat
-var resolve = path.resolve
-var join = path.join
 
 // Find a file or a directory downwards.
 function one(test, paths, callback) {
@@ -32,11 +22,7 @@ function all(test, paths, callback) {
 
 // Find applicable files.
 function find(test, paths, callback, one) {
-  var state = {
-    broken: false,
-    checked: [],
-    test: augment(test)
-  }
+  var state = {checked: [], test: augment(test)}
 
   if (!callback) {
     callback = paths
@@ -54,31 +40,28 @@ function find(test, paths, callback, one) {
 
 // Find files in `filePath`.
 function visit(state, filePath, one, done) {
-  var file
-
   // Don’t walk into places multiple times.
-  if (own.call(state.checked, filePath)) {
+  if (state.checked.indexOf(filePath) > -1) {
     done([])
     return
   }
 
-  state.checked[filePath] = true
-
-  file = vfile(filePath)
-
-  stat(resolve(filePath), onstat)
+  state.checked.push(filePath)
+  fs.stat(path.resolve(filePath), onstat)
 
   function onstat(error, stats) {
     var real = Boolean(stats)
     var results = []
+    var file
     var result
 
     if (state.broken || !real) {
       done([])
     } else {
+      file = vfile(filePath)
       result = state.test(file, stats)
 
-      if (mask(result, INCLUDE)) {
+      if ((result & 1) === 1 /* Include. */) {
         results.push(file)
 
         if (one) {
@@ -87,15 +70,19 @@ function visit(state, filePath, one, done) {
         }
       }
 
-      if (mask(result, BREAK)) {
+      if ((result & 8) === 8 /* Break. */) {
         state.broken = true
       }
 
-      if (state.broken || !stats.isDirectory() || mask(result, SKIP)) {
+      if (
+        state.broken ||
+        !stats.isDirectory() ||
+        (result & 4) === 4 /* Skip. */
+      ) {
         return done(results)
       }
 
-      readdir(filePath, onread)
+      fs.readdir(filePath, onread)
     }
 
     function onread(error, entries) {
@@ -111,7 +98,6 @@ function visit(state, filePath, one, done) {
 // Find files in `paths`.  Returns a list of applicable files.
 // eslint-disable-next-line max-params
 function visitAll(state, paths, cwd, one, done) {
-  var expected = paths.length
   var actual = -1
   var result = []
 
@@ -120,7 +106,7 @@ function visitAll(state, paths, cwd, one, done) {
   next()
 
   function each(filePath) {
-    visit(state, join(cwd || '', filePath), one, onvisit)
+    visit(state, path.join(cwd || '', filePath), one, onvisit)
   }
 
   function onvisit(files) {
@@ -129,9 +115,7 @@ function visitAll(state, paths, cwd, one, done) {
   }
 
   function next() {
-    actual++
-
-    if (actual === expected) {
+    if (++actual === paths.length) {
       done(result)
     }
   }
@@ -140,51 +124,44 @@ function visitAll(state, paths, cwd, one, done) {
 // Augment `test` from several supported values to a function returning a
 // boolean.
 function augment(test) {
-  if (typeof test === 'function') {
-    return test
-  }
-
-  return typeof test === 'string' ? testString(test) : multiple(test)
+  return typeof test === 'function'
+    ? test
+    : typeof test === 'string'
+    ? testString(test)
+    : multiple(test)
 }
 
 // Wrap a string given as a test.
-// A normal string checks for equality to both the filename and extension.
-// A string starting with a `.` checks for that equality too, and also to just
-// the extension.
 function testString(test) {
   return check
 
   // Check whether the given `file` matches the bound value.
   function check(file) {
-    var basename = file.basename
-
-    if (test === basename || test === file.extname) {
+    if (test === file.basename || test === file.extname) {
       return true
     }
 
-    if (basename.charAt(0) === '.' || basename === 'node_modules') {
-      return SKIP
+    if (file.basename.charAt(0) === '.' || file.basename === 'node_modules') {
+      return 4
     }
   }
 }
 
 function multiple(test) {
-  var length = test.length
-  var index = -1
   var tests = []
+  var index = -1
 
-  while (++index < length) {
+  while (++index < test.length) {
     tests[index] = augment(test[index])
   }
 
   return check
 
   function check(file) {
+    var index = -1
     var result
 
-    index = -1
-
-    while (++index < length) {
+    while (++index < tests.length) {
       result = tests[index](file)
 
       if (result) {
@@ -194,8 +171,4 @@ function multiple(test) {
 
     return false
   }
-}
-
-function mask(value, bitmask) {
-  return (value & bitmask) === bitmask
 }
