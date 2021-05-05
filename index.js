@@ -100,8 +100,11 @@ function visit(state, filePath, one, done) {
 function visitAll(state, paths, cwd, one, done) {
   var actual = -1
   var result = []
+  var index = -1
 
-  paths.forEach(each)
+  while (++index < paths.length) {
+    each(path[index])
+  }
 
   next()
 
