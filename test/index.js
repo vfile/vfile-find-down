@@ -8,7 +8,7 @@ var base = join.bind(null, process.cwd())
 var tests = base('test')
 
 test('findDownOne', function (t) {
-  t.plan(13)
+  t.plan(15)
 
   findDownOne('package.json', function (error, file) {
     t.deepEqual(
@@ -65,10 +65,12 @@ test('findDownOne', function (t) {
   })
 
   findDownOne(['.md', '.json'], tests, function (error, file) {
-    t.deepEqual(
-      check(file),
-      [join('test', 'fixture', 'foo.json')],
-      'should search for multiple tests'
+    var list = check(file)
+    t.ok(list.length === 1, 'should search for multiple tests (1)')
+    t.ok(
+      list[0] === join('test', 'fixture', 'foo.json') ||
+        list[0] === join('test', 'fixture', 'quuuux.md'),
+      'should search for multiple tests (2)'
     )
   })
 
@@ -76,10 +78,12 @@ test('findDownOne', function (t) {
     '.md',
     [base('test', 'fixture', 'foo'), base('test', 'fixture', 'bar')],
     function (error, file) {
-      t.deepEqual(
-        check(file),
-        [join('test', 'fixture', 'foo', 'quuux.md')],
-        'should search multiple directories'
+      var list = check(file)
+      t.ok(list.length === 1, 'should search multiple directories (1)')
+      t.ok(
+        list[0] === join('test', 'fixture', 'foo', 'quuux.md') ||
+          list[0] === join('test', 'fixture', 'bar', 'baaaz.md'),
+        'should search multiple directories (2)'
       )
     }
   )
