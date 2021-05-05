@@ -1,23 +1,19 @@
-'use strict'
+import fs from 'fs'
+import path from 'path'
+import {toVFile} from 'to-vfile'
 
-var fs = require('fs')
-var path = require('path')
-var vfile = require('to-vfile')
-
-exports.INCLUDE = 1
-exports.SKIP = 4
-exports.BREAK = 8
-exports.all = all
-exports.one = one
-
-// Find a file or a directory downwards.
-function one(test, paths, callback) {
-  return find(test, paths, callback, true)
-}
+export const INCLUDE = 1
+export const SKIP = 4
+export const BREAK = 8
 
 // Find files or directories downwards.
-function all(test, paths, callback) {
+export function findDown(test, paths, callback) {
   return find(test, paths, callback)
+}
+
+// Find a file or a directory downwards.
+export function findDownOne(test, paths, callback) {
+  return find(test, paths, callback, true)
 }
 
 // Find applicable files.
@@ -41,7 +37,7 @@ function find(test, paths, callback, one) {
 // Find files in `filePath`.
 function visit(state, filePath, one, done) {
   // Don’t walk into places multiple times.
-  if (state.checked.indexOf(filePath) > -1) {
+  if (state.checked.includes(filePath)) {
     done([])
     return
   }
@@ -58,7 +54,7 @@ function visit(state, filePath, one, done) {
     if (state.broken || !real) {
       done([])
     } else {
-      file = vfile(filePath)
+      file = toVFile(filePath)
       result = state.test(file, stats)
 
       if ((result & 1) === 1 /* Include. */) {
@@ -103,7 +99,7 @@ function visitAll(state, paths, cwd, one, done) {
   var index = -1
 
   while (++index < paths.length) {
-    each(path[index])
+    each(paths[index])
   }
 
   next()

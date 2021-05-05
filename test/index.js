@@ -1,18 +1,16 @@
-'use strict'
-
-var test = require('tape')
-var path = require('path')
-var findDown = require('..')
+import test from 'tape'
+import path from 'path'
+import {findDown, findDownOne, INCLUDE, BREAK} from '../index.js'
 
 var join = path.join
 var base = join.bind(null, process.cwd())
 
 var tests = base('test')
 
-test('findDown.one', function (t) {
+test('findDownOne', function (t) {
   t.plan(13)
 
-  findDown.one('package.json', function (error, file) {
+  findDownOne('package.json', function (error, file) {
     t.deepEqual(
       check(file),
       ['package.json'],
@@ -20,7 +18,7 @@ test('findDown.one', function (t) {
     )
   })
 
-  findDown.one('foo.json', tests, function (error, file) {
+  findDownOne('foo.json', tests, function (error, file) {
     t.deepEqual(
       check(file),
       [join('test', 'fixture', 'foo.json')],
@@ -28,7 +26,7 @@ test('findDown.one', function (t) {
     )
   })
 
-  findDown.one('.json', tests, function (error, file) {
+  findDownOne('.json', tests, function (error, file) {
     t.deepEqual(
       check(file),
       [join('test', 'fixture', 'foo.json')],
@@ -36,7 +34,7 @@ test('findDown.one', function (t) {
     )
   })
 
-  findDown.one(
+  findDownOne(
     function (file) {
       return file.stem === 'quux'
     },
@@ -50,7 +48,7 @@ test('findDown.one', function (t) {
     }
   )
 
-  findDown.one('.test', tests, function (error, file) {
+  findDownOne('.test', tests, function (error, file) {
     t.deepEqual(
       check(file),
       [join('test', 'fixture', '.test')],
@@ -58,7 +56,7 @@ test('findDown.one', function (t) {
     )
   })
 
-  findDown.one('.md', function (error, file) {
+  findDownOne('.md', function (error, file) {
     t.deepEqual(
       check(file),
       ['readme.md'],
@@ -66,7 +64,7 @@ test('findDown.one', function (t) {
     )
   })
 
-  findDown.one(['.md', '.json'], tests, function (error, file) {
+  findDownOne(['.md', '.json'], tests, function (error, file) {
     t.deepEqual(
       check(file),
       [join('test', 'fixture', 'foo.json')],
@@ -74,7 +72,7 @@ test('findDown.one', function (t) {
     )
   })
 
-  findDown.one(
+  findDownOne(
     '.md',
     [base('test', 'fixture', 'foo'), base('test', 'fixture', 'bar')],
     function (error, file) {
@@ -86,18 +84,18 @@ test('findDown.one', function (t) {
     }
   )
 
-  findDown.one('!', tests, function (error, file) {
+  findDownOne('!', tests, function (error, file) {
     t.equal(file, null, 'should pass `null` when not found #1')
   })
 
-  findDown.one(['!', '?'], tests, function (error, file) {
+  findDownOne(['!', '?'], tests, function (error, file) {
     t.equal(file, null, 'should pass `null` when not found #2')
   })
 
-  findDown.one(
+  findDownOne(
     function (file) {
       if (file.stem === 'foo') {
-        return findDown.INCLUDE
+        return INCLUDE
       }
     },
     tests,
@@ -105,32 +103,32 @@ test('findDown.one', function (t) {
       t.deepEqual(
         check(file),
         [join('test', 'fixture', 'foo')],
-        'should support `findDown.INCLUDE`'
+        'should support `INCLUDE`'
       )
     }
   )
 
-  findDown.one(
+  findDownOne(
     function (file) {
       if (file.stem === 'foo') {
-        return findDown.BREAK
+        return BREAK
       }
     },
     tests,
     function (error, file) {
-      t.deepEqual(check(file), [null], 'should support `findDown.BREAK`')
+      t.deepEqual(check(file), [null], 'should support `BREAK`')
     }
   )
 
-  findDown.one('.md', 'missing', function (error, file) {
+  findDownOne('.md', 'missing', function (error, file) {
     t.deepEqual(check(file), [null], 'should ignore unfound files')
   })
 })
 
-test('findDown.all', function (t) {
+test('findDown', function (t) {
   t.plan(12)
 
-  findDown.all('package.json', function (error, files) {
+  findDown('package.json', function (error, files) {
     t.deepEqual(
       check(files),
       ['package.json'],
@@ -138,7 +136,7 @@ test('findDown.all', function (t) {
     )
   })
 
-  findDown.all('foo.json', tests, function (error, files) {
+  findDown('foo.json', tests, function (error, files) {
     t.deepEqual(
       check(files),
       [join('test', 'fixture', 'foo.json')],
@@ -146,7 +144,7 @@ test('findDown.all', function (t) {
     )
   })
 
-  findDown.all('.md', tests, function (error, files) {
+  findDown('.md', tests, function (error, files) {
     t.deepEqual(
       check(files).sort(),
       [
@@ -162,7 +160,7 @@ test('findDown.all', function (t) {
     )
   })
 
-  findDown.all(
+  findDown(
     function (file) {
       return file.stem.charAt(0) === 'q'
     },
@@ -181,7 +179,7 @@ test('findDown.all', function (t) {
     }
   )
 
-  findDown.all('.test', tests, function (error, files) {
+  findDown('.test', tests, function (error, files) {
     t.deepEqual(
       check(files),
       [join('test', 'fixture', '.test')],
@@ -189,7 +187,7 @@ test('findDown.all', function (t) {
     )
   })
 
-  findDown.all(['.json', '.md'], tests, function (error, files) {
+  findDown(['.json', '.md'], tests, function (error, files) {
     t.deepEqual(
       check(files).sort(),
       [
@@ -206,7 +204,7 @@ test('findDown.all', function (t) {
     )
   })
 
-  findDown.all(
+  findDown(
     '.md',
     [
       base('test', 'fixture', 'foo', 'bar', 'baz'),
@@ -224,7 +222,7 @@ test('findDown.all', function (t) {
     }
   )
 
-  findDown.all('!', tests, function (error, files) {
+  findDown('!', tests, function (error, files) {
     t.deepEqual(
       check(files),
       [],
@@ -232,7 +230,7 @@ test('findDown.all', function (t) {
     )
   })
 
-  findDown.all(['?', '!'], tests, function (error, files) {
+  findDown(['?', '!'], tests, function (error, files) {
     t.deepEqual(
       check(files),
       [],
@@ -240,16 +238,16 @@ test('findDown.all', function (t) {
     )
   })
 
-  findDown.all(
+  findDown(
     function (file) {
       var mask = 0
 
       if (file.stem.charAt(0) === 'q') {
-        mask = findDown.INCLUDE
+        mask = INCLUDE
       }
 
       if (file.stem === 'quuux') {
-        mask |= findDown.BREAK
+        mask |= BREAK
       }
 
       return mask
@@ -262,16 +260,16 @@ test('findDown.all', function (t) {
           join('test', 'fixture', 'quuuux.md'),
           join('test', 'fixture', 'foo', 'quuux.md')
         ],
-        'should support `findDown.INCLUDE` and `findDown.BREAK`'
+        'should support `INCLUDE` and `BREAK`'
       )
     }
   )
 
-  findDown.all('.md', 'missing', function (error, file) {
+  findDown('.md', 'missing', function (error, file) {
     t.deepEqual(check(file), [], 'should ignore unfound files')
   })
 
-  findDown.all(
+  findDown(
     '.md',
     [base('test', 'fixture', 'foo'), base('test', 'fixture')],
     function (error, files) {

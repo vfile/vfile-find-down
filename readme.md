@@ -11,6 +11,9 @@ Find [vfile][]s by searching the file system downwards.
 
 ## Install
 
+This package is [ESM only](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c):
+Node 12+ is needed to use it and it must be `import`ed instead of `require`d.
+
 [npm][]:
 
 ```sh
@@ -22,7 +25,7 @@ npm install vfile-find-down
 ```js
 var findDown = require('vfile-find-down')
 
-findDown.all('.md', console.log)
+findDown('.md', console.log)
 ```
 
 Yields:
@@ -37,7 +40,11 @@ null [ VFile {
 
 ## API
 
-### `findDown.all(tests[, paths], callback)`
+This package exports the following identifiers: `findDown`, `findDownOne`,
+`INCLUDE`, `SKIP`, `BREAK`.
+There is no default export.
+
+### `findDown(tests[, paths], callback)`
 
 Search for `tests` downwards.
 Invokes callback with either an error or an array of files passing `tests`.
@@ -67,9 +74,9 @@ Place(s) to searching from (`Array.<string>` or `string`, default:
 
 Function invoked with all matching files (`function cb(err[, files])`).
 
-### `findDown.one(tests[, paths], callback)`
+### `findDownOne(tests[, paths], callback)`
 
-Like `findDown.all`, but invokes `callback` with the first found file, or
+Like `findDown`, but invokes `callback` with the first found file, or
 `null`.
 
 ### `function test(file, stats)`
@@ -79,13 +86,13 @@ Invoked with a [vfile][] and a [stats][] object.
 
 ###### Returns
 
-*   `true` or `findDown.INCLUDE` — Include the file in the results
-*   `findDown.SKIP` — Do not search inside this directory
-*   `findDown.BREAK` — Stop searching for files
+*   `true` or `INCLUDE` — Include the file in the results
+*   `SKIP` — Do not search inside this directory
+*   `BREAK` — Stop searching for files
 *   anything else is ignored: files are neither included nor skipped
 
 The different flags can be combined by using the pipe operator:
-`findDown.INCLUDE | findDown.SKIP`.
+`INCLUDE | SKIP`.
 
 ## Contribute
 
