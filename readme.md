@@ -44,17 +44,22 @@ This package exports the following identifiers: `findDown`, `findDownOne`,
 `INCLUDE`, `SKIP`, `BREAK`.
 There is no default export.
 
-### `findDown(tests[, paths], callback)`
+### `findDown(tests[, paths][, callback])`
 
 Search for `tests` downwards.
-Invokes callback with either an error or an array of files passing `tests`.
+Calls callback with either an error or an array of files passing `tests`.
 Note: Virtual Files are not read (their `contents` is not populated).
+
+##### Signatures
+
+*   `(tests: Tests, paths?: string|Array.<string>, callback: Callback): void`
+*   `(tests: Tests, paths?: string|Array.<string>): Promise.<Array.<VFile>>`
 
 ##### Parameters
 
 ###### `tests`
 
-Things to search for (`string|Function|Array.<tests>`).
+Things to search for (`string|Function|Array.<Tests>`).
 
 If an array is passed in, any test must match a given file for it to be
 included.
@@ -72,17 +77,17 @@ Place(s) to searching from (`Array.<string>` or `string`, default:
 
 ###### `callback`
 
-Function invoked with all matching files (`function cb(err[, files])`).
+Function called with all matching files (`function cb(err[, files])`).
 
-### `findDownOne(tests[, paths], callback)`
+### `findDownOne(tests[, paths][, callback])`
 
-Like `findDown`, but invokes `callback` with the first found file, or
-`null`.
+Like `findDown`, but either calls `callback` with the first found file or
+`null`, or returns a promise that resolved to a file or `null`.
 
 ### `function test(file, stats)`
 
 Check whether a virtual file should be included.
-Invoked with a [vfile][] and a [stats][] object.
+Called with a [vfile][] and a [stats][] object.
 
 ###### Returns
 

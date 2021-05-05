@@ -8,7 +8,7 @@ var base = join.bind(null, process.cwd())
 var tests = base('test')
 
 test('findDownOne', function (t) {
-  t.plan(15)
+  t.plan(16)
 
   findDownOne('package.json', function (error, file) {
     t.deepEqual(
@@ -16,6 +16,10 @@ test('findDownOne', function (t) {
       ['package.json'],
       '`directory` should default to CWD'
     )
+  })
+
+  findDownOne('package.json').then(function (file) {
+    t.deepEqual(check(file), ['package.json'], 'should support promises')
   })
 
   findDownOne('foo.json', tests, function (error, file) {
@@ -130,7 +134,7 @@ test('findDownOne', function (t) {
 })
 
 test('findDown', function (t) {
-  t.plan(12)
+  t.plan(13)
 
   findDown('package.json', function (error, files) {
     t.deepEqual(
@@ -138,6 +142,10 @@ test('findDown', function (t) {
       ['package.json'],
       '`directory` should default to CWD'
     )
+  })
+
+  findDown('package.json').then(function (files) {
+    t.deepEqual(check(files), ['package.json'], 'should support promises')
   })
 
   findDown('foo.json', tests, function (error, files) {

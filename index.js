@@ -22,15 +22,27 @@ function find(test, paths, callback, one) {
 
   if (!callback) {
     callback = paths
-    paths = [process.cwd()]
-  } else if (typeof paths === 'string') {
+    paths = process.cwd()
+  }
+
+  if (typeof paths === 'string') {
     paths = [paths]
   }
 
-  return visitAll(state, paths, null, one, done)
+  if (!callback) return new Promise(executor)
 
-  function done(result) {
-    callback(null, one ? result[0] || null : result)
+  executor(resolve)
+
+  function resolve(result) {
+    callback(null, result)
+  }
+
+  function executor(resolve) {
+    visitAll(state, paths, null, one, done)
+
+    function done(result) {
+      resolve(one ? result[0] || null : result)
+    }
   }
 }
 
@@ -91,30 +103,26 @@ function visit(state, filePath, one, done) {
   }
 }
 
-// Find files in `paths`.  Returns a list of applicable files.
+// Find files in `paths`.
 // eslint-disable-next-line max-params
 function visitAll(state, paths, cwd, one, done) {
   var actual = -1
+  var expected = -1
   var result = []
-  var index = -1
 
-  while (++index < paths.length) {
-    each(paths[index])
+  while (++expected < paths.length) {
+    visit(state, path.join(cwd || '', paths[expected]), one, onvisit)
   }
 
   next()
 
-  function each(filePath) {
-    visit(state, path.join(cwd || '', filePath), one, onvisit)
-  }
-
   function onvisit(files) {
-    result = result.concat(files)
+    result.push(...files)
     next()
   }
 
   function next() {
-    if (++actual === paths.length) {
+    if (++actual === expected) {
       done(result)
     }
   }
