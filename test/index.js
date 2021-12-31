@@ -2,8 +2,9 @@
  * @typedef {import('vfile').VFile} VFile
  */
 
+import path from 'node:path'
+import process from 'node:process'
 import test from 'tape'
-import path from 'path'
 import {findDown, findDownOne, INCLUDE, BREAK} from '../index.js'
 
 var join = path.join
