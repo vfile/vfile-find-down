@@ -41,7 +41,7 @@ This package is [ESM only][esm].
 In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
 
 ```sh
-npm install vfile-matter
+npm install vfile-find-down
 ```
 
 ## Use
