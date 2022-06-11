@@ -7,31 +7,55 @@
 [![Backers][backers-badge]][collective]
 [![Chat][chat-badge]][chat]
 
-Find [vfile][]s by searching the file system downwards.
+[vfile][] utility to find files by searching the file system downwards.
+
+## Contents
+
+*   [What is this?](#what-is-this)
+*   [When should I use this?](#when-should-i-use-this)
+*   [Install](#install)
+*   [Use](#use)
+*   [API](#api)
+    *   [`findDown(tests[, paths][, callback])`](#finddowntests-paths-callback)
+    *   [`findDownOne(tests[, paths][, callback])`](#finddownonetests-paths-callback)
+    *   [`function assert(file, stats)`](#function-assertfile-stats)
+*   [Types](#types)
+*   [Compatibility](#compatibility)
+*   [Contribute](#contribute)
+*   [License](#license)
+
+## What is this?
+
+This utility lets you find one or many files downwards.
+
+## When should I use this?
+
+You can use this utility if you want to find files in, say, a folder.
+One example is all markdown files.
+If you instead want to find files upwards, such as config files, you can use
+[`vfile-find-up`][vfile-find-up].
 
 ## Install
 
-This package is [ESM only](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c):
-Node 12+ is needed to use it and it must be `import`ed instead of `require`d.
-
-[npm][]:
+This package is [ESM only][esm].
+In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
 
 ```sh
-npm install vfile-find-down
+npm install vfile-matter
 ```
 
 ## Use
 
 ```js
-var findDown = require('vfile-find-down')
+import {findDown} from 'vfile-find-down'
 
-findDown('.md', console.log)
+console.log(await findDown('.md'))
 ```
 
 Yields:
 
 ```js
-null [ VFile {
+[ VFile {
   data: {},
   messages: [],
   history: [ '/Users/tilde/projects/oss/vfile-find-down/readme.md' ],
@@ -40,15 +64,17 @@ null [ VFile {
 
 ## API
 
-This package exports the following identifiers: `findDown`, `findDownOne`,
-`INCLUDE`, `SKIP`, `BREAK`.
+This package exports the identifiers `findDown`, `findDownOne`, `INCLUDE`,
+`SKIP`, and `BREAK`.
 There is no default export.
 
 ### `findDown(tests[, paths][, callback])`
 
 Search for `tests` downwards.
-Calls callback with either an error or an array of files passing `tests`.
-Note: Virtual Files are not read (their `contents` is not populated).
+Calls callback with either an error or an array of files passing `tests`, or
+returns them as a promise if no `callback` is passed.
+
+> 👉 **Note**: files are not read (their `value` is not populated).
 
 ##### Signatures
 
@@ -68,36 +94,48 @@ If a `string` is passed in, the `basename` or `extname` of files must match it
 for them to be included (and hidden directories and `node_modules` will not be
 searched).
 
-Otherwise, they must be [`function`][test].
+Otherwise, they must be [`Assert`][assert].
 
 ###### `paths`
 
-Place(s) to searching from (`Array<string>` or `string`, default:
+Place or places to search from (`Array<string>` or `string`, default:
 `process.cwd()`).
 
 ###### `callback`
 
-Function called with all matching files (`function cb(err[, files])`).
+Function called with all matching files (`function cb(error[, files])`).
 
 ### `findDownOne(tests[, paths][, callback])`
 
 Like `findDown`, but either calls `callback` with the first found file or
 `null`, or returns a promise that resolved to a file or `null`.
 
-### `function test(file, stats)`
+### `function assert(file, stats)`
 
-Check whether a virtual file should be included.
+Check whether a file should be included.
 Called with a [vfile][] and a [stats][] object.
 
 ###### Returns
 
-*   `true` or `INCLUDE` — Include the file in the results
-*   `SKIP` — Do not search inside this directory
-*   `BREAK` — Stop searching for files
+*   `true` or `INCLUDE` — include the file in the results
+*   `SKIP` — do not search inside this directory
+*   `BREAK` — stop searching for files
 *   anything else is ignored: files are neither included nor skipped
 
 The different flags can be combined by using the pipe operator:
 `INCLUDE | SKIP`.
+
+## Types
+
+This package is fully typed with [TypeScript][].
+It exports the additional types `Assert` and `Test`.
+
+## Compatibility
+
+Projects maintained by the unified collective are compatible with all maintained
+versions of Node.js.
+As of now, that is Node.js 12.20+, 14.14+, 16.0+, and 18.0+.
+Our projects sometimes work with older versions, but this is not guaranteed.
 
 ## Contribute
 
@@ -139,13 +177,17 @@ abide by its terms.
 
 [npm]: https://docs.npmjs.com/cli/install
 
-[contributing]: https://github.com/vfile/.github/blob/HEAD/contributing.md
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
 
-[support]: https://github.com/vfile/.github/blob/HEAD/support.md
+[typescript]: https://www.typescriptlang.org
+
+[contributing]: https://github.com/vfile/.github/blob/main/contributing.md
+
+[support]: https://github.com/vfile/.github/blob/main/support.md
 
 [health]: https://github.com/vfile/.github
 
-[coc]: https://github.com/vfile/.github/blob/HEAD/code-of-conduct.md
+[coc]: https://github.com/vfile/.github/blob/main/code-of-conduct.md
 
 [license]: license
 
@@ -153,6 +195,8 @@ abide by its terms.
 
 [vfile]: https://github.com/vfile/vfile
 
+[vfile-find-up]: https://github.com/vfile/vfile-find-up
+
 [stats]: https://nodejs.org/api/fs.html#fs_class_fs_stats
 
-[test]: #function-testfile-stats
+[assert]: #function-assertfile-stats

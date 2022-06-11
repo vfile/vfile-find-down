@@ -1,17 +1,17 @@
 /**
  * @typedef {import('vfile').VFile} VFile
  * @typedef {string|Assert|Array<string|Assert>} Test
- * 
+ *
  * @typedef State
  * @property {Array<string>} checked
  * @property {Assert} test
  * @property {boolean} [broken]
- * 
+ *
  * @callback Assert
  * @param {VFile} file
  * @param {fs.Stats} stats
  * @returns {number|boolean|void}
- * 
+ *
  * @callback Callback
  * @param {Error|null} error
  * @param {Array<VFile>} files
