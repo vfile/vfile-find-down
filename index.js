@@ -1,8 +1,21 @@
 /**
  * @typedef {import('vfile').VFile} VFile
- * @typedef {string|Assert|Array.<string|Assert>} Test
- * @typedef {(file: VFile, stats: fs.Stats) => number|boolean|void} Assert
- * @typedef {{checked: string[], test: Assert, broken?: boolean}} State
+ * @typedef {string|Assert|Array<string|Assert>} Test
+ * 
+ * @typedef State
+ * @property {Array<string>} checked
+ * @property {Assert} test
+ * @property {boolean} [broken]
+ * 
+ * @callback Assert
+ * @param {VFile} file
+ * @param {fs.Stats} stats
+ * @returns {number|boolean|void}
+ * 
+ * @callback Callback
+ * @param {Error|null} error
+ * @param {Array<VFile>} files
+ * @returns {void}
  */
 
 import fs from 'node:fs'
@@ -17,9 +30,9 @@ export const BREAK = 8
 export const findDown =
   /**
    * @type {{
-   *   (test: Test, paths: string|Array.<string>, callback: (error: Error|null, files: Array.<VFile>) => void): void
-   *   (test: Test, callback: (error: Error|null, files: Array.<VFile>) => void): void
-   *   (test: Test, paths?: string|Array.<string>): Promise.<Array.<VFile>>
+   *   (test: Test, paths: string|Array<string>, callback: Callback): void
+   *   (test: Test, callback: Callback): void
+   *   (test: Test, paths?: string|Array<string>): Promise<Array<VFile>>
    * }}
    */
   (
@@ -27,8 +40,8 @@ export const findDown =
      * Find files or directories downwards.
      *
      * @param {Test} test
-     * @param {string|Array.<string>} paths
-     * @param {(error: Error|null, files: Array.<VFile>) => void} callback
+     * @param {string|Array<string>} paths
+     * @param {Callback} callback
      * @returns {unknown}
      */
     function (test, paths, callback) {
@@ -39,9 +52,9 @@ export const findDown =
 export const findDownOne =
   /**
    * @type {{
-   *   (test: Test, paths: string|Array.<string>, callback: (error: Error|null, file?: VFile) => void): void
-   *   (test: Test, callback: (error: Error|null, file?: VFile) => void): void
-   *   (test: Test, paths?: string|Array.<string>): Promise.<VFile>
+   *   (test: Test, paths: string|Array<string>, callback: Callback): void
+   *   (test: Test, callback: Callback): void
+   *   (test: Test, paths?: string|Array<string>): Promise<VFile>
    * }}
    */
   (
@@ -49,8 +62,8 @@ export const findDownOne =
      * Find a file or a directory downwards.
      *
      * @param {Test} test
-     * @param {string|Array.<string>} paths
-     * @param {(error: Error|null, file?: VFile) => void} callback
+     * @param {string|Array<string>} paths
+     * @param {Callback} callback
      * @returns {unknown}
      */
     function (test, paths, callback) {
@@ -62,17 +75,17 @@ export const findDownOne =
  * Find applicable files.
  *
  * @param {Test} test
- * @param {string|Array.<string>|((error: Error|null, result?: VFile|Array.<VFile>) => void)} cwds
- * @param {null|undefined|((error: Error|null, result?: VFile|Array.<VFile>) => void)} cb
+ * @param {string|Array<string>|((error: Error|null, result?: VFile|Array<VFile>) => void)} cwds
+ * @param {null|undefined|((error: Error|null, result?: VFile|Array<VFile>) => void)} cb
  * @param {boolean} [one]
- * @returns {Promise.<VFile|Array.<VFile>>}
+ * @returns {Promise<VFile|Array<VFile>>}
  */
 function find(test, cwds, cb, one) {
-  var state = {checked: [], test: convert(test)}
-  /** @type {Array.<string>} */
-  var paths
-  /** @type {(error: Error|null, result?: VFile|Array.<VFile>) => void} */
-  var callback
+  const state = {checked: [], test: convert(test)}
+  /** @type {Array<string>} */
+  let paths
+  /** @type {(error: Error|null, result?: VFile|Array<VFile>) => void} */
+  let callback
 
   if (typeof cwds === 'string') {
     paths = [cwds]
@@ -90,20 +103,20 @@ function find(test, cwds, cb, one) {
   executor(resolve)
 
   /**
-   * @param {VFile|Array.<VFile>} result
+   * @param {VFile|Array<VFile>} result
    */
   function resolve(result) {
     callback(null, result)
   }
 
   /**
-   * @param {(x: VFile|Array.<VFile>) => void} resolve
+   * @param {(x: VFile|Array<VFile>) => void} resolve
    */
   function executor(resolve) {
     visitAll(state, paths, null, one, done)
 
     /**
-     * @param {Array.<VFile>} result
+     * @param {Array<VFile>} result
      */
     function done(result) {
       resolve(one ? result[0] || null : result)
@@ -129,19 +142,15 @@ function visit(state, filePath, one, done) {
   state.checked.push(filePath)
 
   fs.stat(path.resolve(filePath), function (_, stats) {
-    var real = Boolean(stats)
-    /** @type {Array.<VFile>} */
-    var results = []
-    /** @type {VFile} */
-    var file
-    /** @type {number} */
-    var result
+    const real = Boolean(stats)
+    /** @type {Array<VFile>} */
+    const results = []
 
     if (state.broken || !real) {
       done([])
     } else {
-      file = toVFile(filePath)
-      result = Number(state.test(file, stats))
+      const file = toVFile(filePath)
+      const result = Number(state.test(file, stats))
 
       if ((result & INCLUDE) === INCLUDE /* Include. */) {
         results.push(file)
@@ -170,7 +179,7 @@ function visit(state, filePath, one, done) {
     }
 
     /**
-     * @param {Array.<VFile>} files
+     * @param {Array<VFile>} files
      */
     function onvisit(files) {
       done([...results, ...files])
@@ -182,17 +191,17 @@ function visit(state, filePath, one, done) {
  * Find files in `paths`.
  *
  * @param {State} state
- * @param {Array.<string>} paths
+ * @param {Array<string>} paths
  * @param {string} cwd
  * @param {boolean} one
  * @param {Function} done
  */
 // eslint-disable-next-line max-params
 function visitAll(state, paths, cwd, one, done) {
-  var actual = -1
-  var expected = -1
-  /** @type {Array.<VFile>} */
-  var result = []
+  let actual = -1
+  let expected = -1
+  /** @type {Array<VFile>} */
+  const result = []
 
   while (++expected < paths.length) {
     visit(state, path.join(cwd || '', paths[expected]), one, onvisit)
@@ -201,7 +210,7 @@ function visitAll(state, paths, cwd, one, done) {
   next()
 
   /**
-   * @param {Array.<VFile>} files
+   * @param {Array<VFile>} files
    */
   function onvisit(files) {
     result.push(...files)
@@ -257,13 +266,13 @@ function testString(test) {
 /**
  * Check multiple tests.
  *
- * @param {Array.<string|Assert>} test
+ * @param {Array<string|Assert>} test
  * @returns {Assert}
  */
 function multiple(test) {
-  /** @type {Array.<Assert>} */
-  var tests = []
-  var index = -1
+  /** @type {Array<Assert>} */
+  const tests = []
+  let index = -1
 
   while (++index < test.length) {
     tests[index] = convert(test[index])
@@ -273,12 +282,10 @@ function multiple(test) {
 
   /** @type {Assert} */
   function check(file, stats) {
-    var index = -1
-    /** @type {number|boolean|void} */
-    var result
+    let index = -1
 
     while (++index < tests.length) {
-      result = tests[index](file, stats)
+      const result = tests[index](file, stats)
 
       if (result) {
         return result

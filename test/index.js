@@ -7,13 +7,13 @@ import process from 'node:process'
 import test from 'tape'
 import {findDown, findDownOne, INCLUDE, BREAK} from '../index.js'
 
-var join = path.join
+const join = path.join
 /**
- * @type {(...args: string[]) => string}
+ * @type {(...args: Array<string>) => string}
  */
-var base = join.bind(null, process.cwd())
+const base = join.bind(null, process.cwd())
 
-var tests = base('test')
+const tests = base('test')
 
 test('findDownOne', function (t) {
   t.plan(17)
@@ -77,7 +77,7 @@ test('findDownOne', function (t) {
   })
 
   findDownOne(['.md', '.json'], tests, function (_, file) {
-    var list = check(file)
+    const list = check(file)
     t.ok(list.length === 1, 'should search for multiple tests (1)')
     t.ok(
       list[0] === join('test', 'fixture', 'foo.json') ||
@@ -90,7 +90,7 @@ test('findDownOne', function (t) {
     '.md',
     [base('test', 'fixture', 'foo'), base('test', 'fixture', 'bar')],
     function (_, file) {
-      var list = check(file)
+      const list = check(file)
       t.ok(list.length === 1, 'should search multiple directories (1)')
       t.ok(
         list[0] === join('test', 'fixture', 'foo', 'quuux.md') ||
@@ -116,7 +116,7 @@ test('findDownOne', function (t) {
     },
     tests,
     function (_, file) {
-      var list = check(file)
+      const list = check(file)
       t.ok(list.length === 1)
       t.ok(
         list[0] === join('test', 'fixture', 'foo') ||
@@ -262,7 +262,7 @@ test('findDown', function (t) {
 
   findDown(
     function (file) {
-      var mask = 0
+      let mask = 0
 
       if (file.stem.charAt(0) === 'q') {
         mask = INCLUDE
@@ -316,8 +316,8 @@ test('findDown', function (t) {
  * Utility to ensure no outbound files are included, and to strip the CWD from
  * paths.
  *
- * @param {Array.<VFile>|VFile|null} files
- * @returns {Array.<string>}
+ * @param {Array<VFile>|VFile|null} files
+ * @returns {Array<string>}
  */
 function check(files) {
   if (files === null) {

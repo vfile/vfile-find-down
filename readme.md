@@ -52,14 +52,14 @@ Note: Virtual Files are not read (their `contents` is not populated).
 
 ##### Signatures
 
-*   `(tests: Tests, paths?: string|Array.<string>, callback: Callback): void`
-*   `(tests: Tests, paths?: string|Array.<string>): Promise.<Array.<VFile>>`
+*   `(tests: Tests, paths?: string|Array<string>, callback: Callback): void`
+*   `(tests: Tests, paths?: string|Array<string>): Promise<Array<VFile>>`
 
 ##### Parameters
 
 ###### `tests`
 
-Things to search for (`string|Function|Array.<Tests>`).
+Things to search for (`string|Function|Array<Tests>`).
 
 If an array is passed in, any test must match a given file for it to be
 included.
@@ -72,7 +72,7 @@ Otherwise, they must be [`function`][test].
 
 ###### `paths`
 
-Place(s) to searching from (`Array.<string>` or `string`, default:
+Place(s) to searching from (`Array<string>` or `string`, default:
 `process.cwd()`).
 
 ###### `callback`
