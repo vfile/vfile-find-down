@@ -1,148 +1,236 @@
 /**
  * @typedef {import('vfile').VFile} VFile
- * @typedef {string|Assert|Array<string|Assert>} Test
- *
- * @typedef State
- * @property {Array<string>} checked
- * @property {Assert} test
- * @property {boolean} [broken]
- *
- * @callback Assert
- * @param {VFile} file
- * @param {fs.Stats} stats
- * @returns {number|boolean|void}
- *
- * @callback Callback
- * @param {Error|null} error
- * @param {Array<VFile>} files
- * @returns {void}
  */
 
+/**
+ *
+ * @callback Assert
+ *   Test a file.
+ * @param {VFile} file
+ *   File to test.
+ * @param {fs.Stats} stats
+ *   Stats from `fs.stat`.
+ * @returns {boolean | number | undefined | void}
+ *   How to handle this file.
+ *
+ * @typedef {Array<Assert | string> | Assert | string} Test
+ *
+ * @typedef State
+ *   State.
+ * @property {Set<string>} checked
+ *   Files that have been checked already.
+ * @property {Assert} test
+ *   File test.
+ * @property {boolean} broken
+ *   Whether we stopped searching.
+ *
+ * @callback CallbackOne
+ *   Callback called when done finding one file.
+ * @param {Error | null} error
+ *   Error.
+ *
+ *   > 👉 **Note**: Errors are currently never passed
+ * @param {VFile | null} file
+ *   File.
+ * @returns {void}
+ *   Nothing.
+ *
+ * @callback Callback
+ *   Callback called when done.
+ * @param {Error | null} error
+ *   Error.
+ *
+ *   > 👉 **Note**: Errors are currently never passed.
+ * @param {Array<VFile>} files
+ *   Files.
+ * @returns {void}
+ *   Nothing.
+ */
+
+// Note: using callback style is likely faster here as we could walk into tons
+// of folders.
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import {toVFile} from 'to-vfile'
 
+// To do: use `URL`?
+// To do: next major: rename to `findDownAll`?
+
+/**
+ * Include this file.
+ */
 export const INCLUDE = 1
+
+/**
+ * Skip this directory.
+ */
 export const SKIP = 4
+
+/**
+ * Stop searching.
+ */
 export const BREAK = 8
 
+/**
+ * Find files or directories downwards.
+ *
+ * @param test
+ *   Things to search for.
+ * @param paths
+ *   Places to search from.
+ * @param callback
+ *   Callback called when done.
+ * @returns
+ *   Nothing when `callback` is given, otherwise a promise that resolves to
+ *   files.
+ */
 export const findDown =
   /**
-   * @type {{
-   *   (test: Test, paths: string|Array<string>, callback: Callback): void
-   *   (test: Test, callback: Callback): void
-   *   (test: Test, paths?: string|Array<string>): Promise<Array<VFile>>
-   * }}
+   * @type {(
+   *   ((test: Test, paths: Array<string> | string | null | undefined, callback: Callback) => void) &
+   *   ((test: Test, callback: Callback) => void) &
+   *   ((test: Test, paths?: Array<string> | null | undefined) => Promise<Array<VFile>>)
+   * )}
    */
   (
     /**
-     * Find files or directories downwards.
-     *
      * @param {Test} test
-     * @param {string|Array<string>} paths
-     * @param {Callback} callback
-     * @returns {unknown}
+     * @param {Array<string> | Callback | string | null | undefined} [paths]
+     * @param {Callback | null | undefined} [callback]
+     * @returns {Promise<Array<VFile>> | undefined}
      */
     function (test, paths, callback) {
-      // @ts-expect-error: To do: fix `callback` and `one`.
-      return find(test, paths, callback)
-    }
-  )
+      /** @type {Callback | null | undefined} */
+      let callbackAll
+      /** @type {Promise<Array<VFile>>} */
+      let promise
 
-export const findDownOne =
-  /**
-   * @type {{
-   *   (test: Test, paths: string|Array<string>, callback: Callback): void
-   *   (test: Test, callback: Callback): void
-   *   (test: Test, paths?: string|Array<string>): Promise<VFile>
-   * }}
-   */
-  (
-    /**
-     * Find a file or a directory downwards.
-     *
-     * @param {Test} test
-     * @param {string|Array<string>} paths
-     * @param {Callback} callback
-     * @returns {unknown}
-     */
-    function (test, paths, callback) {
-      // @ts-expect-error: To do: fix `callback` and `one`.
-      return find(test, paths, callback, true)
+      if (typeof paths === 'function') {
+        callbackAll = paths
+        promise = find(test, undefined, false)
+      } else {
+        callbackAll = callback
+        promise = find(test, paths || undefined, false)
+      }
+
+      if (!callbackAll) {
+        return promise
+      }
+
+      promise.then(
+        // @ts-expect-error: `callbackAll` is defined.
+        (files) => callbackAll(null, files),
+        callbackAll
+      )
     }
   )
 
 /**
- * Find applicable files.
+ * Find the first file or directory downwards.
+ *
+ * @param test
+ *   Things to search for.
+ * @param paths
+ *   Places to search from.
+ * @param callback
+ *   Callback called when done.
+ * @returns
+ *   Nothing when `callback` is given, otherwise a promise that resolves to
+ *   a file or `null`.
+ */
+export const findDownOne =
+  /**
+   * @type {(
+   *   ((test: Test, paths: Array<string> | string | null | undefined, callback: CallbackOne) => void) &
+   *   ((test: Test, callback: CallbackOne) => void) &
+   *   ((test: Test, paths?: Array<string> | null | undefined) => Promise<VFile | null>)
+   * )}
+   */
+  (
+    /**
+     * @param {Test} test
+     * @param {Array<string> | CallbackOne | string | null | undefined} [paths]
+     * @param {CallbackOne | null | undefined} [callback]
+     * @returns {Promise<VFile | null> | undefined}
+     */
+    function (test, paths, callback) {
+      /** @type {CallbackOne | null | undefined} */
+      let callbackOne
+      /** @type {Promise<Array<VFile>>} */
+      let promise
+
+      if (typeof paths === 'function') {
+        callbackOne = paths
+        promise = find(test, undefined, true)
+      } else {
+        callbackOne = callback
+        promise = find(test, paths || undefined, true)
+      }
+
+      if (!callbackOne) {
+        return promise.then(one)
+      }
+
+      promise.then(
+        // @ts-expect-error: `callbackOne` is defined.
+        (files) => callbackOne(null, one(files)),
+        callbackOne
+      )
+    }
+  )
+
+/**
+ * Find files.
  *
  * @param {Test} test
- * @param {string|Array<string>|((error: Error|null, result?: VFile|Array<VFile>) => void)} cwds
- * @param {null|undefined|((error: Error|null, result?: VFile|Array<VFile>) => void)} cb
- * @param {boolean} [one]
- * @returns {Promise<VFile|Array<VFile>> | undefined}
+ *   Things to search for.
+ * @param {Array<string> | string | undefined} paths
+ *   Places to search from.
+ * @param {boolean} one
+ *   Stop at one file.
+ * @returns {Promise<Array<VFile>>}
+ *   Promise that resolves to files.
  */
-function find(test, cwds, cb, one) {
-  const state = {checked: [], test: convert(test)}
+function find(test, paths, one) {
+  /** @type {State} */
+  const state = {checked: new Set(), test: convert(test), broken: false}
   /** @type {Array<string>} */
-  let paths
-  /** @type {((error: Error|null, result?: VFile|Array<VFile>) => void) | null | undefined} */
-  let callback
+  let cleanPaths
 
-  if (typeof cwds === 'string') {
-    paths = [cwds]
-    callback = cb
-  } else if (Array.isArray(cwds)) {
-    paths = cwds
-    callback = cb
+  if (typeof paths === 'string') {
+    cleanPaths = [paths]
+  } else if (Array.isArray(paths)) {
+    cleanPaths = paths
   } else {
-    paths = [process.cwd()]
-    callback = cwds
+    cleanPaths = [process.cwd()]
   }
 
-  if (!callback) return new Promise(executor)
-
-  executor(resolve)
-
-  /**
-   * @param {VFile|Array<VFile>} result
-   */
-  function resolve(result) {
-    // @ts-expect-error: `callback` is defined if we’re here.
-    callback(null, result)
-  }
-
-  /**
-   * @param {(x: VFile|Array<VFile>) => void} resolve
-   */
-  function executor(resolve) {
-    visitAll(state, paths, null, one, done)
-
-    /**
-     * @param {Array<VFile>} result
-     */
-    function done(result) {
-      resolve(one ? result[0] || null : result)
-    }
-  }
+  return new Promise(function (resolve) {
+    visitAll(state, cleanPaths, undefined, one, resolve)
+  })
 }
 
 /**
  * Find files in `filePath`.
  *
  * @param {State} state
+ *   Info passed around.
  * @param {string} filePath
- * @param {boolean | undefined} one
- * @param {Function} done
+ *   Base.
+ * @param {boolean} one
+ *   Stop at one file.
+ * @param {(files: Array<VFile>) => void} done
+ *   Callback called when done.
  */
 function visit(state, filePath, one, done) {
   // Don’t walk into places multiple times.
-  if (state.checked.includes(filePath)) {
+  if (state.checked.has(filePath)) {
     done([])
     return
   }
 
-  state.checked.push(filePath)
+  state.checked.add(filePath)
 
   fs.stat(path.resolve(filePath), function (_, stats) {
     const real = Boolean(stats)
@@ -194,10 +282,15 @@ function visit(state, filePath, one, done) {
  * Find files in `paths`.
  *
  * @param {State} state
+ *   Info passed around.
  * @param {Array<string>} paths
- * @param {string | null} cwd
- * @param {boolean | undefined} one
- * @param {Function} done
+ *   Paths.
+ * @param {string | undefined} cwd
+ *   Base.
+ * @param {boolean} one
+ *   Stop at one file.
+ * @param {(files: Array<VFile>) => void} done
+ *   Callback called when done.
  */
 // eslint-disable-next-line max-params
 function visitAll(state, paths, cwd, one, done) {
@@ -256,10 +349,12 @@ function testString(test) {
    * @type {Assert}
    */
   function check(file) {
+    // File matches the given value as the basename or extname.
     if (test === file.basename || test === file.extname) {
       return INCLUDE
     }
 
+    // Ignore dotfiles and `node_modules` normally.
     if (
       file.basename &&
       (file.basename.charAt(0) === '.' || file.basename === 'node_modules')
@@ -272,7 +367,7 @@ function testString(test) {
 /**
  * Check multiple tests.
  *
- * @param {Array<string|Assert>} test
+ * @param {Array<Assert | string>} test
  * @returns {Assert}
  */
 function multiple(test) {
@@ -300,4 +395,12 @@ function multiple(test) {
 
     return false
   }
+}
+
+/**
+ * @param {Array<VFile>} files
+ * @returns {VFile | null}
+ */
+function one(files) {
+  return files[0] || null
 }
