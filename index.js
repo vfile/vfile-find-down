@@ -45,6 +45,7 @@ export const findDown =
      * @returns {unknown}
      */
     function (test, paths, callback) {
+      // @ts-expect-error: To do: fix `callback` and `one`.
       return find(test, paths, callback)
     }
   )
@@ -67,6 +68,7 @@ export const findDownOne =
      * @returns {unknown}
      */
     function (test, paths, callback) {
+      // @ts-expect-error: To do: fix `callback` and `one`.
       return find(test, paths, callback, true)
     }
   )
@@ -78,13 +80,13 @@ export const findDownOne =
  * @param {string|Array<string>|((error: Error|null, result?: VFile|Array<VFile>) => void)} cwds
  * @param {null|undefined|((error: Error|null, result?: VFile|Array<VFile>) => void)} cb
  * @param {boolean} [one]
- * @returns {Promise<VFile|Array<VFile>>}
+ * @returns {Promise<VFile|Array<VFile>> | undefined}
  */
 function find(test, cwds, cb, one) {
   const state = {checked: [], test: convert(test)}
   /** @type {Array<string>} */
   let paths
-  /** @type {(error: Error|null, result?: VFile|Array<VFile>) => void} */
+  /** @type {((error: Error|null, result?: VFile|Array<VFile>) => void) | null | undefined} */
   let callback
 
   if (typeof cwds === 'string') {
@@ -106,6 +108,7 @@ function find(test, cwds, cb, one) {
    * @param {VFile|Array<VFile>} result
    */
   function resolve(result) {
+    // @ts-expect-error: `callback` is defined if we’re here.
     callback(null, result)
   }
 
@@ -129,7 +132,7 @@ function find(test, cwds, cb, one) {
  *
  * @param {State} state
  * @param {string} filePath
- * @param {boolean} one
+ * @param {boolean | undefined} one
  * @param {Function} done
  */
 function visit(state, filePath, one, done) {
@@ -192,8 +195,8 @@ function visit(state, filePath, one, done) {
  *
  * @param {State} state
  * @param {Array<string>} paths
- * @param {string} cwd
- * @param {boolean} one
+ * @param {string | null} cwd
+ * @param {boolean | undefined} one
  * @param {Function} done
  */
 // eslint-disable-next-line max-params
@@ -257,7 +260,10 @@ function testString(test) {
       return INCLUDE
     }
 
-    if (file.basename.charAt(0) === '.' || file.basename === 'node_modules') {
+    if (
+      file.basename &&
+      (file.basename.charAt(0) === '.' || file.basename === 'node_modules')
+    ) {
       return SKIP
     }
   }

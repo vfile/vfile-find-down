@@ -184,7 +184,7 @@ test('findDown', function (t) {
 
   findDown(
     function (file) {
-      return file.stem.charAt(0) === 'q'
+      return file.stem !== undefined && file.stem.charAt(0) === 'q'
     },
     tests,
     function (_, files) {
@@ -264,7 +264,7 @@ test('findDown', function (t) {
     function (file) {
       let mask = 0
 
-      if (file.stem.charAt(0) === 'q') {
+      if (file.stem && file.stem.charAt(0) === 'q') {
         mask = INCLUDE
       }
 
@@ -317,7 +317,7 @@ test('findDown', function (t) {
  * paths.
  *
  * @param {Array<VFile>|VFile|null} files
- * @returns {Array<string>}
+ * @returns {Array<string | null>}
  */
 function check(files) {
   if (files === null) {
