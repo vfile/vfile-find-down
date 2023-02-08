@@ -16,9 +16,15 @@
 *   [Install](#install)
 *   [Use](#use)
 *   [API](#api)
-    *   [`findDown(tests[, paths][, callback])`](#finddowntests-paths-callback)
-    *   [`findDownOne(tests[, paths][, callback])`](#finddownonetests-paths-callback)
-    *   [`function assert(file, stats)`](#function-assertfile-stats)
+    *   [`findDown(test[, paths][, callback])`](#finddowntest-paths-callback)
+    *   [`findDownOne(test[, paths][, callback])`](#finddownonetest-paths-callback)
+    *   [`BREAK`](#break)
+    *   [`INCLUDE`](#include)
+    *   [`SKIP`](#skip)
+    *   [`Assert`](#assert)
+    *   [`Callback`](#callback)
+    *   [`CallbackOne`](#callbackone)
+    *   [`Test`](#test)
 *   [Types](#types)
 *   [Compatibility](#compatibility)
 *   [Contribute](#contribute)
@@ -38,7 +44,7 @@ If you instead want to find files upwards, such as config files, you can use
 ## Install
 
 This package is [ESM only][esm].
-In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
+In Node.js (version 14.14+ and 16.0+), install with [npm][]:
 
 ```sh
 npm install vfile-find-down
@@ -64,71 +70,148 @@ Yields:
 
 ## API
 
-This package exports the identifiers `findDown`, `findDownOne`, `INCLUDE`,
-`SKIP`, and `BREAK`.
+This package exports the identifiers
+[`BREAK`][api-break],
+[`INCLUDE`][api-include],
+[`SKIP`][api-skip],
+[`findDown`][api-find-down], and
+[`findDownOne`][api-find-down-one].
 There is no default export.
 
-### `findDown(tests[, paths][, callback])`
+### `findDown(test[, paths][, callback])`
 
-Search for `tests` downwards.
-Calls callback with either an error or an array of files passing `tests`, or
-returns them as a promise if no `callback` is passed.
+Find files or folders downwards.
 
 > 👉 **Note**: files are not read (their `value` is not populated).
 
-##### Signatures
+###### Signatures
 
-*   `(tests: Tests, paths?: string|Array<string>, callback: Callback): void`
-*   `(tests: Tests, paths?: string|Array<string>): Promise<Array<VFile>>`
+*   `(test[, paths], callback) => void`
+*   `(test[, paths]) => Promise<Array<VFile>>`
 
-##### Parameters
+###### Parameters
 
-###### `tests`
-
-Things to search for (`string|Function|Array<Tests>`).
-
-If an array is passed in, any test must match a given file for it to be
-included.
-
-If a `string` is passed in, the `basename` or `extname` of files must match it
-for them to be included (and hidden directories and `node_modules` will not be
-searched).
-
-Otherwise, they must be [`Assert`][assert].
-
-###### `paths`
-
-Place or places to search from (`Array<string>` or `string`, default:
-`process.cwd()`).
-
-###### `callback`
-
-Function called with all matching files (`function cb(error[, files])`).
-
-### `findDownOne(tests[, paths][, callback])`
-
-Like `findDown`, but either calls `callback` with the first found file or
-`null`, or returns a promise that resolved to a file or `null`.
-
-### `function assert(file, stats)`
-
-Check whether a file should be included.
-Called with a [vfile][] and a [stats][] object.
+*   `test` ([`Test`][api-test])
+    — things to search for
+*   `paths` (`Array<string> | string`, default: `process.cwd()`)
+    — places to search from
+*   `callback` ([`Callback`][api-callback], optional)
+    — callback called when done
 
 ###### Returns
 
-*   `true` or `INCLUDE` — include the file in the results
-*   `SKIP` — do not search inside this directory
-*   `BREAK` — stop searching for files
-*   anything else is ignored: files are neither included nor skipped
+Nothing when `callback` is given (`void`), otherwise a promise that resolves to
+files ([`Array<VFile>`][vfile]).
 
+### `findDownOne(test[, paths][, callback])`
+
+Find the first file or folder downwards.
+
+> 👉 **Note**: files are not read (their `value` is not populated).
+
+###### Signatures
+
+*   `(test[, paths], callback) => void`
+*   `(test[, paths]) => Promise<VFile>`
+
+###### Parameters
+
+*   `test` ([`Test`][api-test])
+    — things to search for
+*   `paths` (`Array<string> | string`, default: `process.cwd()`)
+    — places to search from
+*   `callback` ([`CallbackOne`][api-callback-one], optional)
+    — callback called when done
+
+###### Returns
+
+Nothing when `callback` is given (`void`), otherwise a promise that resolves to
+a file ([`VFile | null`][vfile]).
+
+### `BREAK`
+
+Stop searching (`number`).
+
+### `INCLUDE`
+
+Include this file (`number`).
+
+### `SKIP`
+
+Skip this folder (`number`).
+
+### `Assert`
+
+Handle a file (TypeScript type).
+
+###### Parameters
+
+*   `file` ([`VFile`][vfile])
+    — file to handle
+*   `stats` ([`Stats`][stats])
+    — stats from `fs.stat`
+
+###### Returns
+
+How to handle this file (`boolean | number`, optional).
+
+Booleans are treated as `INCLUDE` (when `true`) or `SKIP` (when `false`).
+No result is treated as `SKIP`.
 The different flags can be combined by using the pipe operator:
 `INCLUDE | SKIP`.
+
+### `Callback`
+
+Callback called when done (TypeScript type).
+
+###### Parameters
+
+*   `error` (`Error | null`)
+    — error; errors are currently never passed
+*   `files` ([`Array<VFile>`][vfile])
+    — files
+
+###### Returns
+
+Nothing (`void`).
+
+### `CallbackOne`
+
+Callback called when done finding one file (TypeScript type).
+
+###### Parameters
+
+*   `error` (`Error | null`)
+    — error; errors are currently never passed
+*   `file` ([`VFile | null`][vfile])
+    — file
+
+###### Returns
+
+Nothing (`void`).
+
+### `Test`
+
+Things to search for (TypeScript type).
+
+For strings, the `basename` or `extname` of files must match them and
+hidden folders and `node_modules` will not be searched.
+For arrays, any test in them must match.
+
+###### Type
+
+```ts
+type Test = Array<Assert | string> | Assert | string
+```
 
 ## Types
 
 This package is fully typed with [TypeScript][].
-It exports the additional types `Assert` and `Test`.
+It exports the additional types
+[`Assert`][api-assert],
+[`Callback`][api-callback],
+[`CallbackOne`][api-callback-one], and
+[`Test`][api-test].
 
 ## Compatibility
 
@@ -199,4 +282,20 @@ abide by its terms.
 
 [stats]: https://nodejs.org/api/fs.html#fs_class_fs_stats
 
-[assert]: #function-assertfile-stats
+[api-break]: #break
+
+[api-include]: #include
+
+[api-skip]: #skip
+
+[api-find-down]: #finddowntest-paths-callback
+
+[api-find-down-one]: #finddownonetest-paths-callback
+
+[api-assert]: #assert
+
+[api-callback]: #callback
+
+[api-callback-one]: #callbackone
+
+[api-test]: #test
