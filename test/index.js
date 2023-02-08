@@ -2,314 +2,404 @@
  * @typedef {import('vfile').VFile} VFile
  */
 
+import assert from 'node:assert/strict'
 import path from 'node:path'
 import process from 'node:process'
-import test from 'tape'
+import test from 'node:test'
 import {findDown, findDownOne, INCLUDE, BREAK} from '../index.js'
 
-const join = path.join
-/**
- * @type {(...args: Array<string>) => string}
- */
-const base = join.bind(null, process.cwd())
-
-const tests = base('test')
-
-test('findDownOne', function (t) {
-  t.plan(17)
-
-  findDownOne('package.json', function (_, file) {
-    t.deepEqual(
-      check(file),
-      ['package.json'],
-      '`directory` should default to CWD'
-    )
-  })
-
-  findDownOne('package.json').then(function (file) {
-    t.deepEqual(check(file), ['package.json'], 'should support promises')
-  })
-
-  findDownOne('foo.json', tests, function (_, file) {
-    t.deepEqual(
-      check(file),
-      [join('test', 'fixture', 'foo.json')],
-      'should search for a file'
-    )
-  })
-
-  findDownOne('.json', tests, function (_, file) {
-    t.deepEqual(
-      check(file),
-      [join('test', 'fixture', 'foo.json')],
-      'should search for an extension'
-    )
-  })
-
-  findDownOne(
-    function (file) {
-      return file.stem === 'quux'
-    },
-    tests,
-    function (_, file) {
-      t.deepEqual(
+test('findDownOne', async function () {
+  await new Promise(function (ok) {
+    findDownOne('package.json', function (_, file) {
+      assert.deepEqual(
         check(file),
-        [join('test', 'fixture', 'foo', 'bar', 'quux.md')],
-        'should search with a function'
+        ['package.json'],
+        '`directory` should default to CWD'
       )
-    }
+      ok(undefined)
+    })
+  })
+
+  assert.deepEqual(
+    check(await findDownOne('package.json')),
+    ['package.json'],
+    'should support promises'
   )
 
-  findDownOne('.test', tests, function (_, file) {
-    t.deepEqual(
-      check(file),
-      [join('test', 'fixture', '.test')],
-      'should search for a hidden file'
-    )
-  })
-
-  findDownOne('.md', function (_, file) {
-    t.deepEqual(
-      check(file),
-      ['readme.md'],
-      'should search for the closest file'
-    )
-  })
-
-  findDownOne(['.md', '.json'], tests, function (_, file) {
-    const list = check(file)
-    t.ok(list.length === 1, 'should search for multiple tests (1)')
-    t.ok(
-      list[0] === join('test', 'fixture', 'foo.json') ||
-        list[0] === join('test', 'fixture', 'quuuux.md'),
-      'should search for multiple tests (2)'
-    )
-  })
-
-  findDownOne(
-    '.md',
-    [base('test', 'fixture', 'foo'), base('test', 'fixture', 'bar')],
-    function (_, file) {
-      const list = check(file)
-      t.ok(list.length === 1, 'should search multiple directories (1)')
-      t.ok(
-        list[0] === join('test', 'fixture', 'foo', 'quuux.md') ||
-          list[0] === join('test', 'fixture', 'bar', 'baaaz.md'),
-        'should search multiple directories (2)'
-      )
-    }
-  )
-
-  findDownOne('!', tests, function (_, file) {
-    t.equal(file, null, 'should pass `null` when not found #1')
-  })
-
-  findDownOne(['!', '?'], tests, function (_, file) {
-    t.equal(file, null, 'should pass `null` when not found #2')
-  })
-
-  findDownOne(
-    function (file) {
-      if (file.stem === 'foo') {
-        return INCLUDE
+  await new Promise(function (ok) {
+    findDownOne(
+      'foo.json',
+      path.join(process.cwd(), 'test'),
+      function (_, file) {
+        assert.deepEqual(
+          check(file),
+          [path.join('test', 'fixture', 'foo.json')],
+          'should search for a file'
+        )
+        ok(undefined)
       }
-    },
-    tests,
-    function (_, file) {
-      const list = check(file)
-      t.ok(list.length === 1)
-      t.ok(
-        list[0] === join('test', 'fixture', 'foo') ||
-          list[0] === join('test', 'fixture', 'foo.json'),
-        'should support `INCLUDE`'
+    )
+  })
+
+  await new Promise(function (ok) {
+    findDownOne('.json', path.join(process.cwd(), 'test'), function (_, file) {
+      assert.deepEqual(
+        check(file),
+        [path.join('test', 'fixture', 'foo.json')],
+        'should search for an extension'
       )
-    }
-  )
+      ok(undefined)
+    })
+  })
 
-  findDownOne(
-    function (file) {
-      if (file.stem === 'foo') {
-        return BREAK
+  await new Promise(function (ok) {
+    findDownOne(
+      function (file) {
+        return file.stem === 'quux'
+      },
+      path.join(process.cwd(), 'test'),
+      function (_, file) {
+        assert.deepEqual(
+          check(file),
+          [path.join('test', 'fixture', 'foo', 'bar', 'quux.md')],
+          'should search with a function'
+        )
+        ok(undefined)
       }
-    },
-    tests,
-    function (_, file) {
-      t.deepEqual(check(file), [null], 'should support `BREAK`')
-    }
-  )
+    )
+  })
 
-  findDownOne('.md', 'missing', function (_, file) {
-    t.deepEqual(check(file), [null], 'should ignore unfound files')
+  await new Promise(function (ok) {
+    findDownOne('.test', path.join(process.cwd(), 'test'), function (_, file) {
+      assert.deepEqual(
+        check(file),
+        [path.join('test', 'fixture', '.test')],
+        'should search for a hidden file'
+      )
+      ok(undefined)
+    })
+  })
+
+  await new Promise(function (ok) {
+    findDownOne('.md', function (_, file) {
+      assert.deepEqual(
+        check(file),
+        ['readme.md'],
+        'should search for the closest file'
+      )
+      ok(undefined)
+    })
+  })
+
+  await new Promise(function (ok) {
+    findDownOne(
+      ['.md', '.json'],
+      path.join(process.cwd(), 'test'),
+      function (_, file) {
+        const list = check(file)
+        assert.ok(list.length === 1, 'should search for multiple tests (1)')
+        assert.ok(
+          list[0] === path.join('test', 'fixture', 'foo.json') ||
+            list[0] === path.join('test', 'fixture', 'quuuux.md'),
+          'should search for multiple tests (2)'
+        )
+        ok(undefined)
+      }
+    )
+  })
+
+  await new Promise(function (ok) {
+    findDownOne(
+      '.md',
+      [
+        path.join(process.cwd(), 'test', 'fixture', 'foo'),
+        path.join(process.cwd(), 'test', 'fixture', 'bar')
+      ],
+      function (_, file) {
+        const list = check(file)
+        assert.ok(list.length === 1, 'should search multiple directories (1)')
+        assert.ok(
+          list[0] === path.join('test', 'fixture', 'foo', 'quuux.md') ||
+            list[0] === path.join('test', 'fixture', 'bar', 'baaaz.md'),
+          'should search multiple directories (2)'
+        )
+        ok(undefined)
+      }
+    )
+  })
+
+  await new Promise(function (ok) {
+    findDownOne('!', path.join(process.cwd(), 'test'), function (_, file) {
+      assert.equal(file, null, 'should pass `null` when not found #1')
+      ok(undefined)
+    })
+  })
+
+  await new Promise(function (ok) {
+    findDownOne(
+      ['!', '?'],
+      path.join(process.cwd(), 'test'),
+      function (_, file) {
+        assert.equal(file, null, 'should pass `null` when not found #2')
+        ok(undefined)
+      }
+    )
+  })
+
+  await new Promise(function (ok) {
+    findDownOne(
+      function (file) {
+        if (file.stem === 'foo') {
+          return INCLUDE
+        }
+      },
+      path.join(process.cwd(), 'test'),
+      function (_, file) {
+        const list = check(file)
+        assert.ok(list.length === 1)
+        assert.ok(
+          list[0] === path.join('test', 'fixture', 'foo') ||
+            list[0] === path.join('test', 'fixture', 'foo.json'),
+          'should support `INCLUDE`'
+        )
+        ok(undefined)
+      }
+    )
+  })
+
+  await new Promise(function (ok) {
+    findDownOne(
+      function (file) {
+        if (file.stem === 'foo') {
+          return BREAK
+        }
+      },
+      path.join(process.cwd(), 'test'),
+      function (_, file) {
+        assert.deepEqual(check(file), [null], 'should support `BREAK`')
+        ok(undefined)
+      }
+    )
+  })
+
+  await new Promise(function (ok) {
+    findDownOne('.md', 'missing', function (_, file) {
+      assert.deepEqual(check(file), [null], 'should ignore unfound files')
+      ok(undefined)
+    })
   })
 })
 
-test('findDown', function (t) {
-  t.plan(13)
-
-  findDown('package.json', function (_, files) {
-    t.deepEqual(
-      check(files),
-      ['package.json'],
-      '`directory` should default to CWD'
-    )
+test('findDown', async function () {
+  await new Promise(function (ok) {
+    findDown('package.json', function (_, files) {
+      assert.deepEqual(
+        check(files),
+        ['package.json'],
+        '`directory` should default to CWD'
+      )
+      ok(undefined)
+    })
   })
 
-  findDown('package.json').then(function (files) {
-    t.deepEqual(check(files), ['package.json'], 'should support promises')
+  assert.deepEqual(
+    check(await findDown('package.json')),
+    ['package.json'],
+    'should support promises'
+  )
+
+  await new Promise(function (ok) {
+    findDown('foo.json', path.join(process.cwd(), 'test'), function (_, files) {
+      assert.deepEqual(
+        check(files),
+        [path.join('test', 'fixture', 'foo.json')],
+        'should return files by name and extension'
+      )
+      ok(undefined)
+    })
   })
 
-  findDown('foo.json', tests, function (_, files) {
-    t.deepEqual(
-      check(files),
-      [join('test', 'fixture', 'foo.json')],
-      'should return files by name and extension'
-    )
-  })
-
-  findDown('.md', tests, function (_, files) {
-    t.deepEqual(
-      check(files).sort(),
-      [
-        join('test', 'fixture', 'bar', 'baaaz.md'),
-        join('test', 'fixture', 'bar', 'foo', 'baaz.md'),
-        join('test', 'fixture', 'bar', 'foo', 'bar', 'baz.md'),
-        join('test', 'fixture', 'foo', 'bar', 'baz', 'qux.md'),
-        join('test', 'fixture', 'foo', 'bar', 'quux.md'),
-        join('test', 'fixture', 'foo', 'quuux.md'),
-        join('test', 'fixture', 'quuuux.md')
-      ],
-      'should return files by extension'
-    )
-  })
-
-  findDown(
-    function (file) {
-      return file.stem !== undefined && file.stem.charAt(0) === 'q'
-    },
-    tests,
-    function (_, files) {
-      t.deepEqual(
+  await new Promise(function (ok) {
+    findDown('.md', path.join(process.cwd(), 'test'), function (_, files) {
+      assert.deepEqual(
         check(files).sort(),
         [
-          join('test', 'fixture', 'foo', 'bar', 'baz', 'qux.md'),
-          join('test', 'fixture', 'foo', 'bar', 'quux.md'),
-          join('test', 'fixture', 'foo', 'quuux.md'),
-          join('test', 'fixture', 'quuuux.md')
+          path.join('test', 'fixture', 'bar', 'baaaz.md'),
+          path.join('test', 'fixture', 'bar', 'foo', 'baaz.md'),
+          path.join('test', 'fixture', 'bar', 'foo', 'bar', 'baz.md'),
+          path.join('test', 'fixture', 'foo', 'bar', 'baz', 'qux.md'),
+          path.join('test', 'fixture', 'foo', 'bar', 'quux.md'),
+          path.join('test', 'fixture', 'foo', 'quuux.md'),
+          path.join('test', 'fixture', 'quuuux.md')
         ],
-        'should return files by a test'
+        'should return files by extension'
       )
-    }
-  )
+      ok(undefined)
+    })
+  })
 
-  findDown('.test', tests, function (_, files) {
-    t.deepEqual(
-      check(files),
-      [join('test', 'fixture', '.test')],
-      'should return hidden files'
+  await new Promise(function (ok) {
+    findDown(
+      function (file) {
+        return file.stem !== undefined && file.stem.charAt(0) === 'q'
+      },
+      path.join(process.cwd(), 'test'),
+      function (_, files) {
+        assert.deepEqual(
+          check(files).sort(),
+          [
+            path.join('test', 'fixture', 'foo', 'bar', 'baz', 'qux.md'),
+            path.join('test', 'fixture', 'foo', 'bar', 'quux.md'),
+            path.join('test', 'fixture', 'foo', 'quuux.md'),
+            path.join('test', 'fixture', 'quuuux.md')
+          ],
+          'should return files by a test'
+        )
+        ok(undefined)
+      }
     )
   })
 
-  findDown(['.json', '.md'], tests, function (_, files) {
-    t.deepEqual(
-      check(files).sort(),
+  await new Promise(function (ok) {
+    findDown('.test', path.join(process.cwd(), 'test'), function (_, files) {
+      assert.deepEqual(
+        check(files),
+        [path.join('test', 'fixture', '.test')],
+        'should return hidden files'
+      )
+      ok(undefined)
+    })
+  })
+
+  await new Promise(function (ok) {
+    findDown(
+      ['.json', '.md'],
+      path.join(process.cwd(), 'test'),
+      function (_, files) {
+        assert.deepEqual(
+          check(files).sort(),
+          [
+            path.join('test', 'fixture', 'bar', 'baaaz.md'),
+            path.join('test', 'fixture', 'bar', 'foo', 'baaz.md'),
+            path.join('test', 'fixture', 'bar', 'foo', 'bar', 'baz.md'),
+            path.join('test', 'fixture', 'foo.json'),
+            path.join('test', 'fixture', 'foo', 'bar', 'baz', 'qux.md'),
+            path.join('test', 'fixture', 'foo', 'bar', 'quux.md'),
+            path.join('test', 'fixture', 'foo', 'quuux.md'),
+            path.join('test', 'fixture', 'quuuux.md')
+          ],
+          'should search for multiple tests'
+        )
+        ok(undefined)
+      }
+    )
+  })
+
+  await new Promise(function (ok) {
+    findDown(
+      '.md',
       [
-        join('test', 'fixture', 'bar', 'baaaz.md'),
-        join('test', 'fixture', 'bar', 'foo', 'baaz.md'),
-        join('test', 'fixture', 'bar', 'foo', 'bar', 'baz.md'),
-        join('test', 'fixture', 'foo.json'),
-        join('test', 'fixture', 'foo', 'bar', 'baz', 'qux.md'),
-        join('test', 'fixture', 'foo', 'bar', 'quux.md'),
-        join('test', 'fixture', 'foo', 'quuux.md'),
-        join('test', 'fixture', 'quuuux.md')
+        path.join(process.cwd(), 'test', 'fixture', 'foo', 'bar', 'baz'),
+        path.join(process.cwd(), 'test', 'fixture', 'bar', 'foo', 'bar')
       ],
-      'should search for multiple tests'
-    )
-  })
-
-  findDown(
-    '.md',
-    [
-      base('test', 'fixture', 'foo', 'bar', 'baz'),
-      base('test', 'fixture', 'bar', 'foo', 'bar')
-    ],
-    function (_, file) {
-      t.deepEqual(
-        check(file).sort(),
-        [
-          join('test', 'fixture', 'bar', 'foo', 'bar', 'baz.md'),
-          join('test', 'fixture', 'foo', 'bar', 'baz', 'qux.md')
-        ],
-        'should search multiple directories'
-      )
-    }
-  )
-
-  findDown('!', tests, function (_, files) {
-    t.deepEqual(
-      check(files),
-      [],
-      'should return an empty array when not found #1'
-    )
-  })
-
-  findDown(['?', '!'], tests, function (_, files) {
-    t.deepEqual(
-      check(files),
-      [],
-      'should return an empty array when not found #2'
-    )
-  })
-
-  findDown(
-    function (file) {
-      let mask = 0
-
-      if (file.stem && file.stem.charAt(0) === 'q') {
-        mask = INCLUDE
+      function (_, file) {
+        assert.deepEqual(
+          check(file).sort(),
+          [
+            path.join('test', 'fixture', 'bar', 'foo', 'bar', 'baz.md'),
+            path.join('test', 'fixture', 'foo', 'bar', 'baz', 'qux.md')
+          ],
+          'should search multiple directories'
+        )
+        ok(undefined)
       }
-
-      if (file.stem === 'quuux') {
-        mask |= BREAK
-      }
-
-      return mask
-    },
-    tests,
-    function (_, files) {
-      t.deepEqual(
-        check(files),
-        [
-          join('test', 'fixture', 'quuuux.md'),
-          join('test', 'fixture', 'foo', 'quuux.md')
-        ],
-        'should support `INCLUDE` and `BREAK`'
-      )
-    }
-  )
-
-  findDown('.md', 'missing', function (_, file) {
-    t.deepEqual(check(file), [], 'should ignore unfound files')
+    )
   })
 
-  findDown(
-    '.md',
-    [base('test', 'fixture', 'foo'), base('test', 'fixture')],
-    function (_, files) {
-      t.deepEqual(
+  await new Promise(function (ok) {
+    findDown('!', path.join(process.cwd(), 'test'), function (_, files) {
+      assert.deepEqual(
         check(files),
-        [
-          join('test', 'fixture', 'foo', 'quuux.md'),
-          join('test', 'fixture', 'foo', 'bar', 'quux.md'),
-          join('test', 'fixture', 'foo', 'bar', 'baz', 'qux.md'),
-          join('test', 'fixture', 'quuuux.md'),
-          join('test', 'fixture', 'bar', 'baaaz.md'),
-          join('test', 'fixture', 'bar', 'foo', 'baaz.md'),
-          join('test', 'fixture', 'bar', 'foo', 'bar', 'baz.md')
-        ],
-        'should not duplicate searches'
+        [],
+        'should return an empty array when not found #1'
       )
-    }
-  )
+      ok(undefined)
+    })
+  })
+
+  await new Promise(function (ok) {
+    findDown(['?', '!'], path.join(process.cwd(), 'test'), function (_, files) {
+      assert.deepEqual(
+        check(files),
+        [],
+        'should return an empty array when not found #2'
+      )
+      ok(undefined)
+    })
+  })
+
+  await new Promise(function (ok) {
+    findDown(
+      function (file) {
+        let mask = 0
+
+        if (file.stem && file.stem.charAt(0) === 'q') {
+          mask = INCLUDE
+        }
+
+        if (file.stem === 'quuux') {
+          mask |= BREAK
+        }
+
+        return mask
+      },
+      path.join(process.cwd(), 'test'),
+      function (_, files) {
+        assert.deepEqual(
+          check(files),
+          [
+            path.join('test', 'fixture', 'quuuux.md'),
+            path.join('test', 'fixture', 'foo', 'quuux.md')
+          ],
+          'should support `INCLUDE` and `BREAK`'
+        )
+        ok(undefined)
+      }
+    )
+  })
+
+  await new Promise(function (ok) {
+    findDown('.md', 'missing', function (_, file) {
+      assert.deepEqual(check(file), [], 'should ignore unfound files')
+      ok(undefined)
+    })
+  })
+
+  await new Promise(function (ok) {
+    findDown(
+      '.md',
+      [
+        path.join(process.cwd(), 'test', 'fixture', 'foo'),
+        path.join(process.cwd(), 'test', 'fixture')
+      ],
+      function (_, files) {
+        assert.deepEqual(
+          check(files),
+          [
+            path.join('test', 'fixture', 'foo', 'quuux.md'),
+            path.join('test', 'fixture', 'foo', 'bar', 'quux.md'),
+            path.join('test', 'fixture', 'foo', 'bar', 'baz', 'qux.md'),
+            path.join('test', 'fixture', 'quuuux.md'),
+            path.join('test', 'fixture', 'bar', 'baaaz.md'),
+            path.join('test', 'fixture', 'bar', 'foo', 'baaz.md'),
+            path.join('test', 'fixture', 'bar', 'foo', 'bar', 'baz.md')
+          ],
+          'should not duplicate searches'
+        )
+        ok(undefined)
+      }
+    )
+  })
 })
 
 /**
@@ -326,6 +416,6 @@ function check(files) {
 
   return (Array.isArray(files) ? files : [files])
     .map((file) => file.path)
-    .filter((filePath) => filePath.indexOf(base()) === 0)
-    .map((filePath) => filePath.slice(base().length + 1))
+    .filter((filePath) => filePath.indexOf(path.join(process.cwd())) === 0)
+    .map((filePath) => filePath.slice(path.join(process.cwd()).length + 1))
 }
