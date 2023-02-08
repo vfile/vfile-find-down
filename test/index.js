@@ -7,6 +7,15 @@ import path from 'node:path'
 import process from 'node:process'
 import test from 'node:test'
 import {findDown, findDownOne, INCLUDE, BREAK} from '../index.js'
+import * as mod from '../index.js'
+
+test('core', () => {
+  assert.deepEqual(
+    Object.keys(mod).sort(),
+    ['BREAK', 'INCLUDE', 'SKIP', 'findDown', 'findDownOne'],
+    'should expose the public api'
+  )
+})
 
 test('findDownOne', async function () {
   await new Promise(function (ok) {
