@@ -7,11 +7,10 @@ import path from 'node:path'
 import process from 'node:process'
 import test from 'node:test'
 import {findDown, findDownOne, INCLUDE, BREAK} from '../index.js'
-import * as mod from '../index.js'
 
-test('core', () => {
+test('core', async function () {
   assert.deepEqual(
-    Object.keys(mod).sort(),
+    Object.keys(await import('../index.js')).sort(),
     ['BREAK', 'INCLUDE', 'SKIP', 'findDown', 'findDownOne'],
     'should expose the public api'
   )
@@ -139,7 +138,7 @@ test('findDownOne', async function () {
 
   await new Promise(function (ok) {
     findDownOne('!', path.join(process.cwd(), 'test'), function (_, file) {
-      assert.equal(file, null, 'should pass `null` when not found #1')
+      assert.equal(file, undefined, 'should pass `undefined` when not found #1')
       ok(undefined)
     })
   })
@@ -149,7 +148,11 @@ test('findDownOne', async function () {
       ['!', '?'],
       path.join(process.cwd(), 'test'),
       function (_, file) {
-        assert.equal(file, null, 'should pass `null` when not found #2')
+        assert.equal(
+          file,
+          undefined,
+          'should pass `undefined` when not found #2'
+        )
         ok(undefined)
       }
     )
@@ -185,7 +188,7 @@ test('findDownOne', async function () {
       },
       path.join(process.cwd(), 'test'),
       function (_, file) {
-        assert.deepEqual(check(file), [null], 'should support `BREAK`')
+        assert.deepEqual(check(file), [undefined], 'should support `BREAK`')
         ok(undefined)
       }
     )
@@ -193,7 +196,7 @@ test('findDownOne', async function () {
 
   await new Promise(function (ok) {
     findDownOne('.md', 'missing', function (_, file) {
-      assert.deepEqual(check(file), [null], 'should ignore unfound files')
+      assert.deepEqual(check(file), [undefined], 'should ignore unfound files')
       ok(undefined)
     })
   })
@@ -415,16 +418,22 @@ test('findDown', async function () {
  * Utility to ensure no outbound files are included, and to strip the CWD from
  * paths.
  *
- * @param {Array<VFile>|VFile|null} files
- * @returns {Array<string | null>}
+ * @param {Array<VFile> | VFile | undefined} files
+ * @returns {Array<string | undefined>}
  */
 function check(files) {
-  if (files === null) {
-    return [null]
+  if (files === undefined) {
+    return [undefined]
   }
 
   return (Array.isArray(files) ? files : [files])
-    .map((file) => file.path)
-    .filter((filePath) => filePath.indexOf(path.join(process.cwd())) === 0)
-    .map((filePath) => filePath.slice(path.join(process.cwd()).length + 1))
+    .map(function (file) {
+      return file.path
+    })
+    .filter(function (filePath) {
+      return filePath.indexOf(path.join(process.cwd())) === 0
+    })
+    .map(function (filePath) {
+      return filePath.slice(path.join(process.cwd()).length + 1)
+    })
 }
