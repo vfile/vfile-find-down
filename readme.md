@@ -17,13 +17,13 @@
 *   [Use](#use)
 *   [API](#api)
     *   [`findDown(test[, paths][, callback])`](#finddowntest-paths-callback)
-    *   [`findDownOne(test[, paths][, callback])`](#finddownonetest-paths-callback)
+    *   [`findDownAll(test[, paths][, callback])`](#finddownalltest-paths-callback)
     *   [`BREAK`](#break)
     *   [`INCLUDE`](#include)
     *   [`SKIP`](#skip)
     *   [`Assert`](#assert)
     *   [`Callback`](#callback)
-    *   [`CallbackOne`](#callbackone)
+    *   [`CallbackAll`](#callbackall)
     *   [`Test`](#test)
 *   [Types](#types)
 *   [Compatibility](#compatibility)
@@ -53,9 +53,9 @@ npm install vfile-find-down
 ## Use
 
 ```js
-import {findDown} from 'vfile-find-down'
+import {findDownAll} from 'vfile-find-down'
 
-console.log(await findDown('.md'))
+console.log(await findDownAll('.md'))
 ```
 
 Yields:
@@ -75,35 +75,10 @@ This package exports the identifiers
 [`INCLUDE`][api-include],
 [`SKIP`][api-skip],
 [`findDown`][api-find-down], and
-[`findDownOne`][api-find-down-one].
+[`findDownAll`][api-find-down-all].
 There is no default export.
 
 ### `findDown(test[, paths][, callback])`
-
-Find files or folders downwards.
-
-> 👉 **Note**: files are not read (their `value` is not populated).
-
-###### Signatures
-
-*   `(test[, paths], callback) => undefined`
-*   `(test[, paths]) => Promise<Array<VFile>>`
-
-###### Parameters
-
-*   `test` ([`Test`][api-test])
-    — things to search for
-*   `paths` (`Array<string> | string`, default: `process.cwd()`)
-    — places to search from
-*   `callback` ([`Callback`][api-callback], optional)
-    — callback called when done
-
-###### Returns
-
-Nothing when `callback` is given (`undefined`), otherwise a promise that
-resolves to files ([`Array<VFile>`][vfile]).
-
-### `findDownOne(test[, paths][, callback])`
 
 Find the first file or folder downwards.
 
@@ -120,13 +95,38 @@ Find the first file or folder downwards.
     — things to search for
 *   `paths` (`Array<string> | string`, default: `process.cwd()`)
     — places to search from
-*   `callback` ([`CallbackOne`][api-callback-one], optional)
+*   `callback` ([`Callback`][api-callback], optional)
     — callback called when done
 
 ###### Returns
 
 Nothing when `callback` is given (`void`), otherwise a promise that resolves to
 a file ([`VFile`][vfile] or `undefined`).
+
+### `findDownAll(test[, paths][, callback])`
+
+Find files or folders downwards.
+
+> 👉 **Note**: files are not read (their `value` is not populated).
+
+###### Signatures
+
+*   `(test[, paths], callback) => undefined`
+*   `(test[, paths]) => Promise<Array<VFile>>`
+
+###### Parameters
+
+*   `test` ([`Test`][api-test])
+    — things to search for
+*   `paths` (`Array<string> | string`, default: `process.cwd()`)
+    — places to search from
+*   `callback` ([`CallbackAll`][api-callback-all], optional)
+    — callback called when done
+
+###### Returns
+
+Nothing when `callback` is given (`undefined`), otherwise a promise that
+resolves to files ([`Array<VFile>`][vfile]).
 
 ### `BREAK`
 
@@ -162,21 +162,6 @@ The different flags can be combined by using the pipe operator:
 
 ### `Callback`
 
-Callback called when done (TypeScript type).
-
-###### Parameters
-
-*   `error` (`Error` or `undefined`)
-    — error; errors are currently never passed
-*   `files` ([`Array<VFile>`][vfile])
-    — files
-
-###### Returns
-
-Nothing (`void`).
-
-### `CallbackOne`
-
 Callback called when done finding one file (TypeScript type).
 
 ###### Parameters
@@ -189,6 +174,21 @@ Callback called when done finding one file (TypeScript type).
 ###### Returns
 
 Nothing (`undefined`).
+
+### `CallbackAll`
+
+Callback called when done (TypeScript type).
+
+###### Parameters
+
+*   `error` (`Error` or `undefined`)
+    — error; errors are currently never passed
+*   `files` ([`Array<VFile>`][vfile])
+    — files
+
+###### Returns
+
+Nothing (`void`).
 
 ### `Test`
 
@@ -210,7 +210,7 @@ This package is fully typed with [TypeScript][].
 It exports the additional types
 [`Assert`][api-assert],
 [`Callback`][api-callback],
-[`CallbackOne`][api-callback-one], and
+[`CallbackAll`][api-callback-all], and
 [`Test`][api-test].
 
 ## Compatibility
@@ -288,14 +288,14 @@ abide by its terms.
 
 [api-skip]: #skip
 
-[api-find-down]: #finddowntest-paths-callback
+[api-find-down-all]: #finddownalltest-paths-callback
 
-[api-find-down-one]: #finddownonetest-paths-callback
+[api-find-down]: #finddowntest-paths-callback
 
 [api-assert]: #assert
 
 [api-callback]: #callback
 
-[api-callback-one]: #callbackone
+[api-callback-all]: #callbackall
 
 [api-test]: #test

@@ -6,19 +6,19 @@ import assert from 'node:assert/strict'
 import path from 'node:path'
 import process from 'node:process'
 import test from 'node:test'
-import {findDown, findDownOne, INCLUDE, BREAK} from '../index.js'
+import {findDown, findDownAll, INCLUDE, BREAK} from '../index.js'
 
 test('core', async function () {
   assert.deepEqual(
     Object.keys(await import('../index.js')).sort(),
-    ['BREAK', 'INCLUDE', 'SKIP', 'findDown', 'findDownOne'],
+    ['BREAK', 'INCLUDE', 'SKIP', 'findDown', 'findDownAll'],
     'should expose the public api'
   )
 })
 
-test('findDownOne', async function () {
+test('findDown', async function () {
   await new Promise(function (ok) {
-    findDownOne('package.json', function (_, file) {
+    findDown('package.json', function (_, file) {
       assert.deepEqual(
         check(file),
         ['package.json'],
@@ -29,28 +29,24 @@ test('findDownOne', async function () {
   })
 
   assert.deepEqual(
-    check(await findDownOne('package.json')),
+    check(await findDown('package.json')),
     ['package.json'],
     'should support promises'
   )
 
   await new Promise(function (ok) {
-    findDownOne(
-      'foo.json',
-      path.join(process.cwd(), 'test'),
-      function (_, file) {
-        assert.deepEqual(
-          check(file),
-          [path.join('test', 'fixture', 'foo.json')],
-          'should search for a file'
-        )
-        ok(undefined)
-      }
-    )
+    findDown('foo.json', path.join(process.cwd(), 'test'), function (_, file) {
+      assert.deepEqual(
+        check(file),
+        [path.join('test', 'fixture', 'foo.json')],
+        'should search for a file'
+      )
+      ok(undefined)
+    })
   })
 
   await new Promise(function (ok) {
-    findDownOne('.json', path.join(process.cwd(), 'test'), function (_, file) {
+    findDown('.json', path.join(process.cwd(), 'test'), function (_, file) {
       assert.deepEqual(
         check(file),
         [path.join('test', 'fixture', 'foo.json')],
@@ -61,7 +57,7 @@ test('findDownOne', async function () {
   })
 
   await new Promise(function (ok) {
-    findDownOne(
+    findDown(
       function (file) {
         return file.stem === 'quux'
       },
@@ -78,7 +74,7 @@ test('findDownOne', async function () {
   })
 
   await new Promise(function (ok) {
-    findDownOne('.test', path.join(process.cwd(), 'test'), function (_, file) {
+    findDown('.test', path.join(process.cwd(), 'test'), function (_, file) {
       assert.deepEqual(
         check(file),
         [path.join('test', 'fixture', '.test')],
@@ -89,7 +85,7 @@ test('findDownOne', async function () {
   })
 
   await new Promise(function (ok) {
-    findDownOne('.md', function (_, file) {
+    findDown('.md', function (_, file) {
       assert.deepEqual(
         check(file),
         ['readme.md'],
@@ -100,7 +96,7 @@ test('findDownOne', async function () {
   })
 
   await new Promise(function (ok) {
-    findDownOne(
+    findDown(
       ['.md', '.json'],
       path.join(process.cwd(), 'test'),
       function (_, file) {
@@ -117,7 +113,7 @@ test('findDownOne', async function () {
   })
 
   await new Promise(function (ok) {
-    findDownOne(
+    findDown(
       '.md',
       [
         path.join(process.cwd(), 'test', 'fixture', 'foo'),
@@ -137,29 +133,21 @@ test('findDownOne', async function () {
   })
 
   await new Promise(function (ok) {
-    findDownOne('!', path.join(process.cwd(), 'test'), function (_, file) {
+    findDown('!', path.join(process.cwd(), 'test'), function (_, file) {
       assert.equal(file, undefined, 'should pass `undefined` when not found #1')
       ok(undefined)
     })
   })
 
   await new Promise(function (ok) {
-    findDownOne(
-      ['!', '?'],
-      path.join(process.cwd(), 'test'),
-      function (_, file) {
-        assert.equal(
-          file,
-          undefined,
-          'should pass `undefined` when not found #2'
-        )
-        ok(undefined)
-      }
-    )
+    findDown(['!', '?'], path.join(process.cwd(), 'test'), function (_, file) {
+      assert.equal(file, undefined, 'should pass `undefined` when not found #2')
+      ok(undefined)
+    })
   })
 
   await new Promise(function (ok) {
-    findDownOne(
+    findDown(
       function (file) {
         if (file.stem === 'foo') {
           return INCLUDE
@@ -180,7 +168,7 @@ test('findDownOne', async function () {
   })
 
   await new Promise(function (ok) {
-    findDownOne(
+    findDown(
       function (file) {
         if (file.stem === 'foo') {
           return BREAK
@@ -195,16 +183,16 @@ test('findDownOne', async function () {
   })
 
   await new Promise(function (ok) {
-    findDownOne('.md', 'missing', function (_, file) {
+    findDown('.md', 'missing', function (_, file) {
       assert.deepEqual(check(file), [undefined], 'should ignore unfound files')
       ok(undefined)
     })
   })
 })
 
-test('findDown', async function () {
+test('findDownAll', async function () {
   await new Promise(function (ok) {
-    findDown('package.json', function (_, files) {
+    findDownAll('package.json', function (_, files) {
       assert.deepEqual(
         check(files),
         ['package.json'],
@@ -215,24 +203,28 @@ test('findDown', async function () {
   })
 
   assert.deepEqual(
-    check(await findDown('package.json')),
+    check(await findDownAll('package.json')),
     ['package.json'],
     'should support promises'
   )
 
   await new Promise(function (ok) {
-    findDown('foo.json', path.join(process.cwd(), 'test'), function (_, files) {
-      assert.deepEqual(
-        check(files),
-        [path.join('test', 'fixture', 'foo.json')],
-        'should return files by name and extension'
-      )
-      ok(undefined)
-    })
+    findDownAll(
+      'foo.json',
+      path.join(process.cwd(), 'test'),
+      function (_, files) {
+        assert.deepEqual(
+          check(files),
+          [path.join('test', 'fixture', 'foo.json')],
+          'should return files by name and extension'
+        )
+        ok(undefined)
+      }
+    )
   })
 
   await new Promise(function (ok) {
-    findDown('.md', path.join(process.cwd(), 'test'), function (_, files) {
+    findDownAll('.md', path.join(process.cwd(), 'test'), function (_, files) {
       assert.deepEqual(
         check(files).sort(),
         [
@@ -251,7 +243,7 @@ test('findDown', async function () {
   })
 
   await new Promise(function (ok) {
-    findDown(
+    findDownAll(
       function (file) {
         return file.stem !== undefined && file.stem.charAt(0) === 'q'
       },
@@ -273,7 +265,7 @@ test('findDown', async function () {
   })
 
   await new Promise(function (ok) {
-    findDown('.test', path.join(process.cwd(), 'test'), function (_, files) {
+    findDownAll('.test', path.join(process.cwd(), 'test'), function (_, files) {
       assert.deepEqual(
         check(files),
         [path.join('test', 'fixture', '.test')],
@@ -284,7 +276,7 @@ test('findDown', async function () {
   })
 
   await new Promise(function (ok) {
-    findDown(
+    findDownAll(
       ['.json', '.md'],
       path.join(process.cwd(), 'test'),
       function (_, files) {
@@ -308,7 +300,7 @@ test('findDown', async function () {
   })
 
   await new Promise(function (ok) {
-    findDown(
+    findDownAll(
       '.md',
       [
         path.join(process.cwd(), 'test', 'fixture', 'foo', 'bar', 'baz'),
@@ -329,7 +321,7 @@ test('findDown', async function () {
   })
 
   await new Promise(function (ok) {
-    findDown('!', path.join(process.cwd(), 'test'), function (_, files) {
+    findDownAll('!', path.join(process.cwd(), 'test'), function (_, files) {
       assert.deepEqual(
         check(files),
         [],
@@ -340,18 +332,22 @@ test('findDown', async function () {
   })
 
   await new Promise(function (ok) {
-    findDown(['?', '!'], path.join(process.cwd(), 'test'), function (_, files) {
-      assert.deepEqual(
-        check(files),
-        [],
-        'should return an empty array when not found #2'
-      )
-      ok(undefined)
-    })
+    findDownAll(
+      ['?', '!'],
+      path.join(process.cwd(), 'test'),
+      function (_, files) {
+        assert.deepEqual(
+          check(files),
+          [],
+          'should return an empty array when not found #2'
+        )
+        ok(undefined)
+      }
+    )
   })
 
   await new Promise(function (ok) {
-    findDown(
+    findDownAll(
       function (file) {
         let mask = 0
 
@@ -381,14 +377,14 @@ test('findDown', async function () {
   })
 
   await new Promise(function (ok) {
-    findDown('.md', 'missing', function (_, file) {
+    findDownAll('.md', 'missing', function (_, file) {
       assert.deepEqual(check(file), [], 'should ignore unfound files')
       ok(undefined)
     })
   })
 
   await new Promise(function (ok) {
-    findDown(
+    findDownAll(
       '.md',
       [
         path.join(process.cwd(), 'test', 'fixture', 'foo'),
