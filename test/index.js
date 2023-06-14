@@ -6,12 +6,12 @@ import assert from 'node:assert/strict'
 import path from 'node:path'
 import process from 'node:process'
 import test from 'node:test'
-import {findDown, findDownAll, INCLUDE, BREAK} from '../index.js'
+import {findDown, findDownAll} from '../index.js'
 
 test('core', async function () {
   assert.deepEqual(
     Object.keys(await import('../index.js')).sort(),
-    ['BREAK', 'INCLUDE', 'SKIP', 'findDown', 'findDownAll'],
+    ['findDown', 'findDownAll'],
     'should expose the public api'
   )
 })
@@ -59,7 +59,7 @@ test('findDown', async function () {
   await new Promise(function (ok) {
     findDown(
       function (file) {
-        return file.stem === 'quux'
+        return {include: file.stem === 'quux'}
       },
       path.join(process.cwd(), 'test'),
       function (_, file) {
@@ -149,9 +149,7 @@ test('findDown', async function () {
   await new Promise(function (ok) {
     findDown(
       function (file) {
-        if (file.stem === 'foo') {
-          return INCLUDE
-        }
+        return {include: file.stem === 'foo'}
       },
       path.join(process.cwd(), 'test'),
       function (_, file) {
@@ -170,9 +168,7 @@ test('findDown', async function () {
   await new Promise(function (ok) {
     findDown(
       function (file) {
-        if (file.stem === 'foo') {
-          return BREAK
-        }
+        return {break: file.stem === 'foo'}
       },
       path.join(process.cwd(), 'test'),
       function (_, file) {
@@ -245,7 +241,7 @@ test('findDownAll', async function () {
   await new Promise(function (ok) {
     findDownAll(
       function (file) {
-        return file.stem !== undefined && file.stem.charAt(0) === 'q'
+        return {include: file.stem !== undefined && file.stem.charAt(0) === 'q'}
       },
       path.join(process.cwd(), 'test'),
       function (_, files) {
@@ -349,17 +345,10 @@ test('findDownAll', async function () {
   await new Promise(function (ok) {
     findDownAll(
       function (file) {
-        let mask = 0
-
-        if (file.stem && file.stem.charAt(0) === 'q') {
-          mask = INCLUDE
+        return {
+          break: file.stem === 'quuux',
+          include: file.stem ? file.stem.charAt(0) === 'q' : false
         }
-
-        if (file.stem === 'quuux') {
-          mask |= BREAK
-        }
-
-        return mask
       },
       path.join(process.cwd(), 'test'),
       function (_, files) {

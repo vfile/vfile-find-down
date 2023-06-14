@@ -18,12 +18,10 @@
 *   [API](#api)
     *   [`findDown(test[, paths][, callback])`](#finddowntest-paths-callback)
     *   [`findDownAll(test[, paths][, callback])`](#finddownalltest-paths-callback)
-    *   [`BREAK`](#break)
-    *   [`INCLUDE`](#include)
-    *   [`SKIP`](#skip)
     *   [`Assert`](#assert)
     *   [`Callback`](#callback)
     *   [`CallbackAll`](#callbackall)
+    *   [`Result`](#result)
     *   [`Test`](#test)
 *   [Types](#types)
 *   [Compatibility](#compatibility)
@@ -71,9 +69,6 @@ Yields:
 ## API
 
 This package exports the identifiers
-[`BREAK`][api-break],
-[`INCLUDE`][api-include],
-[`SKIP`][api-skip],
 [`findDown`][api-find-down], and
 [`findDownAll`][api-find-down-all].
 There is no default export.
@@ -100,8 +95,8 @@ Find the first file or folder downwards.
 
 ###### Returns
 
-Nothing when `callback` is given (`void`), otherwise a promise that resolves to
-a file ([`VFile`][vfile] or `undefined`).
+Nothing when `callback` is given (`undefined`), otherwise a promise that
+resolves to a file ([`VFile`][vfile] or `undefined`).
 
 ### `findDownAll(test[, paths][, callback])`
 
@@ -128,18 +123,6 @@ Find files or folders downwards.
 Nothing when `callback` is given (`undefined`), otherwise a promise that
 resolves to files ([`Array<VFile>`][vfile]).
 
-### `BREAK`
-
-Stop searching (`number`).
-
-### `INCLUDE`
-
-Include this file (`number`).
-
-### `SKIP`
-
-Skip this folder (`number`).
-
 ### `Assert`
 
 Handle a file (TypeScript type).
@@ -153,12 +136,7 @@ Handle a file (TypeScript type).
 
 ###### Returns
 
-How to handle this file (`boolean | number`, optional).
-
-Booleans are treated as `INCLUDE` (when `true`) or `SKIP` (when `false`).
-No result is treated as `SKIP`.
-The different flags can be combined by using the pipe operator:
-`INCLUDE | SKIP`.
+How to handle this file ([`Result`][api-result], optional).
 
 ### `Callback`
 
@@ -188,7 +166,20 @@ Callback called when done (TypeScript type).
 
 ###### Returns
 
-Nothing (`void`).
+Nothing (`undefined`).
+
+### `Result`
+
+What to do when collecting a file or folder (TypeScript type).
+
+###### Fields
+
+*   `break` (`boolean`, default: `false`)
+    — stop searching after this file or folder
+*   `include` (`boolean`, default: `false`)
+    — include this file or folder
+*   `skip` (`boolean`, default: `false`)
+    — do not search inside this folder
 
 ### `Test`
 
@@ -210,7 +201,8 @@ This package is fully typed with [TypeScript][].
 It exports the additional types
 [`Assert`][api-assert],
 [`Callback`][api-callback],
-[`CallbackAll`][api-callback-all], and
+[`CallbackAll`][api-callback-all],
+[`Result`][api-result], and
 [`Test`][api-test].
 
 ## Compatibility
@@ -282,12 +274,6 @@ abide by its terms.
 
 [stats]: https://nodejs.org/api/fs.html#fs_class_fs_stats
 
-[api-break]: #break
-
-[api-include]: #include
-
-[api-skip]: #skip
-
 [api-find-down-all]: #finddownalltest-paths-callback
 
 [api-find-down]: #finddowntest-paths-callback
@@ -297,5 +283,7 @@ abide by its terms.
 [api-callback]: #callback
 
 [api-callback-all]: #callbackall
+
+[api-result]: #result
 
 [api-test]: #test
