@@ -6,11 +6,11 @@ import assert from 'node:assert/strict'
 import path from 'node:path'
 import process from 'node:process'
 import test from 'node:test'
-import {findDown, findDownAll} from '../index.js'
+import {findDown, findDownAll} from 'vfile-find-down'
 
 test('core', async function () {
   assert.deepEqual(
-    Object.keys(await import('../index.js')).sort(),
+    Object.keys(await import('vfile-find-down')).sort(),
     ['findDown', 'findDownAll'],
     'should expose the public api'
   )
