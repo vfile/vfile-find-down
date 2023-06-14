@@ -42,7 +42,7 @@ If you instead want to find files upwards, such as config files, you can use
 ## Install
 
 This package is [ESM only][esm].
-In Node.js (version 14.14+ and 16.0+), install with [npm][]:
+In Node.js (version 16), install with [npm][]:
 
 ```sh
 npm install vfile-find-down
@@ -51,25 +51,26 @@ npm install vfile-find-down
 ## Use
 
 ```js
-import {findDownAll} from 'vfile-find-down'
+import {findDown} from 'vfile-find-down'
 
-console.log(await findDownAll('.md'))
+console.log(await findDown('.md'))
 ```
 
 Yields:
 
 ```js
-[ VFile {
+VFile {
+  cwd: '/Users/tilde/Projects/oss/vfile-find-down',
   data: {},
-  messages: [],
-  history: [ '/Users/tilde/projects/oss/vfile-find-down/readme.md' ],
-  cwd: '/Users/tilde/projects/oss/vfile-find-down' } ]
+  history: [ '/Users/tilde/Projects/oss/vfile-find-down/readme.md' ],
+  messages: []
+}
 ```
 
 ## API
 
 This package exports the identifiers
-[`findDown`][api-find-down], and
+[`findDown`][api-find-down] and
 [`findDownAll`][api-find-down-all].
 There is no default export.
 
@@ -78,6 +79,7 @@ There is no default export.
 Find the first file or folder downwards.
 
 > 👉 **Note**: files are not read (their `value` is not populated).
+> use [`to-vfile`][to-vfile] for that.
 
 ###### Signatures
 
@@ -88,7 +90,7 @@ Find the first file or folder downwards.
 
 *   `test` ([`Test`][api-test])
     — things to search for
-*   `paths` (`Array<string> | string`, default: `process.cwd()`)
+*   `paths` (`Array<string>` or `string`, default: `process.cwd()`)
     — places to search from
 *   `callback` ([`Callback`][api-callback], optional)
     — callback called when done
@@ -103,6 +105,7 @@ resolves to a file ([`VFile`][vfile] or `undefined`).
 Find files or folders downwards.
 
 > 👉 **Note**: files are not read (their `value` is not populated).
+> use [`to-vfile`][to-vfile] for that.
 
 ###### Signatures
 
@@ -113,7 +116,7 @@ Find files or folders downwards.
 
 *   `test` ([`Test`][api-test])
     — things to search for
-*   `paths` (`Array<string> | string`, default: `process.cwd()`)
+*   `paths` (`Array<string>` or `string`, default: `process.cwd()`)
     — places to search from
 *   `callback` ([`CallbackAll`][api-callback-all], optional)
     — callback called when done
@@ -207,10 +210,13 @@ It exports the additional types
 
 ## Compatibility
 
-Projects maintained by the unified collective are compatible with all maintained
+Projects maintained by the unified collective are compatible with maintained
 versions of Node.js.
-As of now, that is Node.js 14.14+ and 16.0+.
-Our projects sometimes work with older versions, but this is not guaranteed.
+
+When we cut a new major release, we drop support for unmaintained versions of
+Node.
+This means we try to keep the current release line, `vfile-find-down@^6`,
+compatible with Node.js 12.
 
 ## Contribute
 
@@ -269,6 +275,8 @@ abide by its terms.
 [author]: https://wooorm.com
 
 [vfile]: https://github.com/vfile/vfile
+
+[to-vfile]: https://github.com/vfile/to-vfile
 
 [vfile-find-up]: https://github.com/vfile/vfile-find-up
 
