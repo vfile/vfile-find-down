@@ -1,6 +1,6 @@
 {
   "name": "vfile-find-down",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "vfile utility to find one or more files by searching the file system downwards",
   "license": "MIT",
   "keywords": [
