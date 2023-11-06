@@ -184,6 +184,23 @@ test('findDown', async function () {
       ok(undefined)
     })
   })
+
+  await new Promise(function (ok) {
+    findDown(
+      function (file) {
+        return {include: file.extname === '.md'}
+      },
+      new URL('fixture/bar/foo', import.meta.url),
+      function (_, file) {
+        assert.deepEqual(
+          check(file),
+          [path.join('test', 'fixture', 'bar', 'foo', 'baaz.md')],
+          'should support URLs'
+        )
+        ok(undefined)
+      }
+    )
+  })
 })
 
 test('findDownAll', async function () {
@@ -392,6 +409,26 @@ test('findDownAll', async function () {
             path.join('test', 'fixture', 'bar', 'foo', 'bar', 'baz.md')
           ],
           'should not duplicate searches'
+        )
+        ok(undefined)
+      }
+    )
+  })
+
+  await new Promise(function (ok) {
+    findDownAll(
+      function (file) {
+        return {include: file.extname === '.md'}
+      },
+      new URL('fixture/bar/foo', import.meta.url),
+      function (_, files) {
+        assert.deepEqual(
+          check(files),
+          [
+            path.join('test', 'fixture', 'bar', 'foo', 'baaz.md'),
+            path.join('test', 'fixture', 'bar', 'foo', 'bar', 'baz.md')
+          ],
+          'should support URLs'
         )
         ok(undefined)
       }
