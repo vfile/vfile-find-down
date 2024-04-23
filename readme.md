@@ -11,22 +11,22 @@
 
 ## Contents
 
-*   [What is this?](#what-is-this)
-*   [When should I use this?](#when-should-i-use-this)
-*   [Install](#install)
-*   [Use](#use)
-*   [API](#api)
-    *   [`findDown(test[, paths][, callback])`](#finddowntest-paths-callback)
-    *   [`findDownAll(test[, paths][, callback])`](#finddownalltest-paths-callback)
-    *   [`Assert`](#assert)
-    *   [`Callback`](#callback)
-    *   [`CallbackAll`](#callbackall)
-    *   [`Result`](#result)
-    *   [`Test`](#test)
-*   [Types](#types)
-*   [Compatibility](#compatibility)
-*   [Contribute](#contribute)
-*   [License](#license)
+* [What is this?](#what-is-this)
+* [When should I use this?](#when-should-i-use-this)
+* [Install](#install)
+* [Use](#use)
+* [API](#api)
+  * [`findDown(test[, paths][, callback])`](#finddowntest-paths-callback)
+  * [`findDownAll(test[, paths][, callback])`](#finddownalltest-paths-callback)
+  * [`Assert`](#assert)
+  * [`Callback`](#callback)
+  * [`CallbackAll`](#callbackall)
+  * [`Result`](#result)
+  * [`Test`](#test)
+* [Types](#types)
+* [Compatibility](#compatibility)
+* [Contribute](#contribute)
+* [License](#license)
 
 ## What is this?
 
@@ -83,17 +83,17 @@ Find the first file or folder downwards.
 
 ###### Signatures
 
-*   `(test[, paths], callback) => undefined`
-*   `(test[, paths]) => Promise<VFile>`
+* `(test[, paths], callback) => undefined`
+* `(test[, paths]) => Promise<VFile>`
 
 ###### Parameters
 
-*   `test` ([`Test`][api-test])
-    — things to search for
-*   `paths` (`Array<URL | string> | URL | string`, default: `process.cwd()`)
-    — places to search from
-*   `callback` ([`Callback`][api-callback], optional)
-    — callback called when done
+* `test` ([`Test`][api-test])
+  — things to search for
+* `paths` (`Array<URL | string> | URL | string`, default: `process.cwd()`)
+  — places to search from
+* `callback` ([`Callback`][api-callback], optional)
+  — callback called when done
 
 ###### Returns
 
@@ -109,17 +109,17 @@ Find files or folders downwards.
 
 ###### Signatures
 
-*   `(test[, paths], callback) => undefined`
-*   `(test[, paths]) => Promise<Array<VFile>>`
+* `(test[, paths], callback) => undefined`
+* `(test[, paths]) => Promise<Array<VFile>>`
 
 ###### Parameters
 
-*   `test` ([`Test`][api-test])
-    — things to search for
-*   `paths` (`Array<URL | string> | URL | string`, default: `process.cwd()`)
-    — places to search from
-*   `callback` ([`CallbackAll`][api-callback-all], optional)
-    — callback called when done
+* `test` ([`Test`][api-test])
+  — things to search for
+* `paths` (`Array<URL | string> | URL | string`, default: `process.cwd()`)
+  — places to search from
+* `callback` ([`CallbackAll`][api-callback-all], optional)
+  — callback called when done
 
 ###### Returns
 
@@ -132,10 +132,10 @@ Handle a file (TypeScript type).
 
 ###### Parameters
 
-*   `file` ([`VFile`][vfile])
-    — file to handle
-*   `stats` ([`Stats`][stats])
-    — stats from `fs.stat`
+* `file` ([`VFile`][vfile])
+  — file to handle
+* `stats` ([`Stats`][stats])
+  — stats from `fs.stat`
 
 ###### Returns
 
@@ -147,10 +147,10 @@ Callback called when done finding one file (TypeScript type).
 
 ###### Parameters
 
-*   `error` (`Error` or `undefined`)
-    — error; errors are currently never passed
-*   `file` ([`VFile`][vfile] or `undefined`)
-    — file
+* `error` (`Error` or `undefined`)
+  — error; errors are currently never passed
+* `file` ([`VFile`][vfile] or `undefined`)
+  — file
 
 ###### Returns
 
@@ -162,10 +162,10 @@ Callback called when done (TypeScript type).
 
 ###### Parameters
 
-*   `error` (`Error` or `undefined`)
-    — error; errors are currently never passed
-*   `files` ([`Array<VFile>`][vfile])
-    — files
+* `error` (`Error` or `undefined`)
+  — error; errors are currently never passed
+* `files` ([`Array<VFile>`][vfile])
+  — files
 
 ###### Returns
 
@@ -177,12 +177,12 @@ What to do when collecting a file or folder (TypeScript type).
 
 ###### Fields
 
-*   `break` (`boolean`, default: `false`)
-    — stop searching after this file or folder
-*   `include` (`boolean`, default: `false`)
-    — include this file or folder
-*   `skip` (`boolean`, default: `false`)
-    — do not search inside this folder
+* `break` (`boolean`, default: `false`)
+  — stop searching after this file or folder
+* `include` (`boolean`, default: `false`)
+  — include this file or folder
+* `skip` (`boolean`, default: `false`)
+  — do not search inside this folder
 
 ### `Test`
 
